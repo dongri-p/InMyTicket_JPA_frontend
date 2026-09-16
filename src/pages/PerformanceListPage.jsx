@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 function PerformanceListPage() {
@@ -30,7 +31,9 @@ function PerformanceListPage() {
       <ul>
         {performances.map((p) => (
           <li key={p.id}>
-            <strong>{p.title}</strong> ({p.category}) - {p.status}
+            <Link to={`/performances/${p.id}`}>
+                <strong>{p.title}</strong>
+            </Link> ({p.category}) - {p.status}
           </li>
         ))}
       </ul>
