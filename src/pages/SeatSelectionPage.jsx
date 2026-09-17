@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 function SeatSelectionPage() {
@@ -48,12 +48,18 @@ function SeatSelectionPage() {
   if (error) return <p role="alert">{error}</p>;
 
   if (reserveResult) {
-    return (
-      <div>
-        <h1>예매 완료</h1>
-        <p>{reserveResult.message}</p>
-        <p>예약 번호: {reserveResult.id}</p>
-      </div>
+  return (
+    <div>
+      <h1>예매 완료</h1>
+      <p>{reserveResult.message}</p>
+      <p>예약 번호: {reserveResult.id}</p>
+      <button
+        type="button"
+        onClick={() => navigate('/payment/result', { state: { reservationId: reserveResult.id } })}
+      >
+        결제하기
+      </button>
+    </div>
     );
   }
 
