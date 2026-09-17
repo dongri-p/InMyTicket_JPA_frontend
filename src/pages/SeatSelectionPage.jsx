@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance';
 
 function SeatSelectionPage() {
   const { scheduleId } = useParams();
+  const navigate = useNavigate();
   const [seats, setSeats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -11,6 +12,9 @@ function SeatSelectionPage() {
   const [isReserving, setIsReserving] = useState(false);
   const [reserveResult, setReserveResult] = useState(null);
   const [reserveError, setReserveError] = useState('');
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState('');
+  const [cancelError, setCancelError] = useState('');
 
   useEffect(() => {
     axiosInstance
@@ -44,22 +48,52 @@ function SeatSelectionPage() {
     }
   };
 
+  const handleCancel = async () => {
+    setIsCanceling(true);
+    setCancelError('');
+
+    try {
+      const response = await axiosInstance.delete(`/api/v1/reservations/${reserveResult.id}`);
+      setCancelMessage(response.data.message);
+    } catch (err) {
+      const message = err.response?.data?.message || '예매 취소에 실패했습니다.';
+      setCancelError(message);
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
 
   if (reserveResult) {
-  return (
-    <div>
-      <h1>예매 완료</h1>
-      <p>{reserveResult.message}</p>
-      <p>예약 번호: {reserveResult.id}</p>
-      <button
-        type="button"
-        onClick={() => navigate('/payment/result', { state: { reservationId: reserveResult.id } })}
-      >
-        결제하기
-      </button>
-    </div>
+    if (cancelMessage) {
+      return (
+        <div>
+          <h1>예매 취소 완료</h1>
+          <p>{cancelMessage}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <h1>예매 완료</h1>
+        <p>{reserveResult.message}</p>
+        <p>예약 번호: {reserveResult.id}</p>
+
+        {cancelError && <p role="alert">{cancelError}</p>}
+
+        <button
+          type="button"
+          onClick={() => navigate('/payment/result', { state: { reservationId: reserveResult.id } })}
+        >
+          결제하기
+        </button>
+        <button type="button" onClick={handleCancel} disabled={isCanceling}>
+          {isCanceling ? '취소 중...' : '예매 취소'}
+        </button>
+      </div>
     );
   }
 
