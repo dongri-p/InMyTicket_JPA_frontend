@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 function PaymentResultPage() {
   const location = useLocation();
   const reservationId = location.state?.reservationId;
+  const hasRequestedRef = useRef(false);
 
   const [isProcessing, setIsProcessing] = useState(true);
   const [result, setResult] = useState(null);
@@ -16,6 +17,9 @@ function PaymentResultPage() {
       setError('예약 정보가 없습니다. 예매 화면부터 다시 진행해주세요.');
       return;
     }
+
+    if (hasRequestedRef.current) return;
+    hasRequestedRef.current = true;
 
     axiosInstance
       .post('/api/v1/payments', {
