@@ -27,6 +27,7 @@ function PerformanceListPage() {
   return (
     <div>
       <h1>공연 목록</h1>
+      <Link to="/my-reservations">마이페이지</Link>
       {performances.length === 0 && <p>등록된 공연이 없습니다.</p>}
       <ul>
         {performances.map((p) => (

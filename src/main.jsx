@@ -7,11 +7,13 @@ import SeatSelectionPage from './pages/SeatSelectionPage.jsx'
 import PaymentResultPage from './pages/PaymentResultPage.jsx'
 import PerformanceListPage from './pages/PerformanceListPage.jsx'
 import PerformanceDetailPage from './pages/PerformanceDetailPage.jsx'
+import MyReservationsPage from './pages/MyReservationsPage.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
+        <Route path="/my-reservations" element={<MyReservationsPage />} />
         <Route path="/performances/:performanceId" element={<PerformanceDetailPage />} />
         <Route path="/" element={<PerformanceListPage />} />
         <Route path="/login" element={<LoginPage />} />
