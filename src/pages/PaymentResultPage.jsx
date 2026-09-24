@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
+// crypto.randomUUID()는 보안 컨텍스트(HTTPS/localhost)에서만 제공되므로,
+// HTTP 배포 환경에서도 동작하는 crypto.getRandomValues()로 대체 생성
+function generatePaymentKey() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 function PaymentResultPage() {
   const location = useLocation();
   const reservationId = location.state?.reservationId;
@@ -24,7 +32,7 @@ function PaymentResultPage() {
     axiosInstance
       .post('/api/v1/payments', {
         reservationId,
-        paymentKey: crypto.randomUUID(),
+        paymentKey: generatePaymentKey(),
       })
       .then((response) => {
         setResult(response.data);
