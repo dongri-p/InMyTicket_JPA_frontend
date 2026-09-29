@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { isLoggedIn } from '../api/auth';
 
 function LoginPage() {
   const [loginId, setLoginId] = useState('');
@@ -8,6 +9,8 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  if (isLoggedIn()) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +23,7 @@ function LoginPage() {
         password,
       });
       localStorage.setItem('accessToken', response.data.accessToken);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err) {
       const message = err.response?.data?.message || '로그인에 실패했습니다.';
       setError(message);

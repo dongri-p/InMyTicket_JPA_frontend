@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
+import RequireAuth from './components/RequireAuth.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SeatSelectionPage from './pages/SeatSelectionPage.jsx'
 import PaymentResultPage from './pages/PaymentResultPage.jsx'
@@ -13,12 +14,12 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/my-reservations" element={<MyReservationsPage />} />
-        <Route path="/performances/:performanceId" element={<PerformanceDetailPage />} />
-        <Route path="/" element={<PerformanceListPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/seats/:scheduleId" element={<SeatSelectionPage />} />
-        <Route path="/payment/result" element={<PaymentResultPage />} />
+        <Route path="/" element={<RequireAuth><PerformanceListPage /></RequireAuth>} />
+        <Route path="/my-reservations" element={<RequireAuth><MyReservationsPage /></RequireAuth>} />
+        <Route path="/performances/:performanceId" element={<RequireAuth><PerformanceDetailPage /></RequireAuth>} />
+        <Route path="/seats/:scheduleId" element={<RequireAuth><SeatSelectionPage /></RequireAuth>} />
+        <Route path="/payment/result" element={<RequireAuth><PaymentResultPage /></RequireAuth>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

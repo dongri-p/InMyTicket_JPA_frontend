@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { logout } from '../api/auth';
 
 function PerformanceListPage() {
   const [performances, setPerformances] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   useEffect(() => {
     axiosInstance
@@ -28,6 +35,7 @@ function PerformanceListPage() {
     <div>
       <h1>공연 목록</h1>
       <Link to="/my-reservations">마이페이지</Link>
+      <button type="button" onClick={handleLogout}>로그아웃</button>
       {performances.length === 0 && <p>등록된 공연이 없습니다.</p>}
       <ul>
         {performances.map((p) => (
