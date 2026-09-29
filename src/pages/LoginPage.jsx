@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { isLoggedIn } from '../api/auth';
 
@@ -9,6 +9,7 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (isLoggedIn()) return <Navigate to="/" replace />;
 
@@ -36,6 +37,8 @@ function LoginPage() {
     <form onSubmit={handleSubmit}>
       <h1>로그인</h1>
 
+      {location.state?.signedUp && <p>회원가입이 완료되었습니다. 로그인해 주세요.</p>}
+
       <div>
         <label htmlFor="loginId">아이디</label>
         <input
@@ -62,6 +65,10 @@ function LoginPage() {
       <button type="submit" disabled={isLoading}>
         {isLoading ? '로그인 중...' : '로그인'}
       </button>
+
+      <p>
+        계정이 없나요? <Link to="/signup">회원가입</Link>
+      </p>
     </form>
   );
 }

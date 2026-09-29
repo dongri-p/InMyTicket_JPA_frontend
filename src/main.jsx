@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import RequireAuth from './components/RequireAuth.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 import SeatSelectionPage from './pages/SeatSelectionPage.jsx'
 import PaymentResultPage from './pages/PaymentResultPage.jsx'
 import PerformanceListPage from './pages/PerformanceListPage.jsx'
@@ -15,6 +16,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<RequireAuth><PerformanceListPage /></RequireAuth>} />
         <Route path="/my-reservations" element={<RequireAuth><MyReservationsPage /></RequireAuth>} />
         <Route path="/performances/:performanceId" element={<RequireAuth><PerformanceDetailPage /></RequireAuth>} />
