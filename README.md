@@ -1,5 +1,7 @@
 # InMyTicket Frontend
 
+[![Frontend CI](https://github.com/dongri-p/InMyTicket_JPA_frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/dongri-p/InMyTicket_JPA_frontend/actions/workflows/ci.yml)
+
 실시간 티켓 예매 서비스 **InMyTicket**의 React 프론트엔드입니다.
 프로젝트 전체 소개, 아키텍처, 문제 해결 경험은 [백엔드 저장소 README](https://github.com/dongri-p/InMyTicket_JPA)에 정리되어 있습니다.
 
