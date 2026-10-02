@@ -38,4 +38,4 @@ API 주소는 `VITE_API_BASE_URL` 환경변수로 바꿀 수 있으며, 지정�
 ## 빌드 / 배포
 `Dockerfile`은 Node로 빌드한 정적 파일을 Nginx로 서빙하는 멀티스테이지 빌드입니다. `VITE_API_BASE_URL`은 빌드 시점에 번들에 들어가므로 build arg로 넘깁니다.
 운영 환경에서는 [InMyTicket_deploy](https://github.com/dongri-p/InMyTicket_deploy)의 Nginx 설정(HTTPS, `/api` 리버스 프록시)으로 이 저장소의 `nginx.conf`를 덮어씁니다.
-`main` 브랜치에 push하면 GitHub Actions가 lint·빌드를 통과한 경우에만 EC2에 자동 배포합니다(`.github/workflows/ci.yml`).
+`main` 브랜치에 push하면 GitHub Actions가 lint·빌드를 통과한 경우에만 이미지를 GHCR에 올리고, EC2는 그 이미지를 받아 자동 배포합니다(`.github/workflows/ci.yml`).
