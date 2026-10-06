@@ -3,6 +3,9 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { isLoggedIn } from '../api/auth';
 
+// README에도 공개하는 체험용 일반 회원 계정
+const DEMO_ACCOUNT = { loginId: 'demo', password: 'demo1234!' };
+
 function LoginPage() {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
@@ -13,16 +16,12 @@ function LoginPage() {
 
   if (isLoggedIn()) return <Navigate to="/" replace />;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const login = async (credentials) => {
     setError('');
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.post('/api/v1/members/login', {
-        loginId,
-        password,
-      });
+      const response = await axiosInstance.post('/api/v1/members/login', credentials);
       localStorage.setItem('accessToken', response.data.accessToken);
       navigate('/', { replace: true });
     } catch (err) {
@@ -31,6 +30,11 @@ function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    login({ loginId, password });
   };
 
   return (
@@ -65,6 +69,11 @@ function LoginPage() {
       <button type="submit" disabled={isLoading}>
         {isLoading ? '로그인 중...' : '로그인'}
       </button>
+
+      <button type="button" onClick={() => login(DEMO_ACCOUNT)} disabled={isLoading}>
+        체험 계정으로 둘러보기
+      </button>
+      <p>가입 없이 바로 예매·결제를 체험할 수 있습니다. (결제는 실제 청구되지 않는 가상 결제입니다)</p>
 
       <p>
         계정이 없나요? <Link to="/signup">회원가입</Link>

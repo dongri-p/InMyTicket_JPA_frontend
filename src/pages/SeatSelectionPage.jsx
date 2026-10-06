@@ -84,6 +84,8 @@ function SeatSelectionPage() {
 
         {cancelError && <p role="alert">{cancelError}</p>}
 
+        <p>결제는 실제 카드 청구가 없는 가상 결제(모의 PG)로 진행됩니다. 안심하고 눌러보세요.</p>
+
         <button
           type="button"
           onClick={() => navigate('/payment/result', { state: { reservationId: reserveResult.id } })}
