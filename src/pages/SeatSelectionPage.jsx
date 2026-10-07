@@ -63,6 +63,8 @@ function SeatSelectionPage() {
     }
   };
 
+  const selectedSeat = seats.find((seat) => seat.seatId === selectedSeatId);
+
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
 
@@ -102,23 +104,38 @@ function SeatSelectionPage() {
   return (
     <div>
       <h1>좌석 선택</h1>
-      <ul>
+
+      <div className="seat-legend">
+        <span>선택 가능</span>
+        <span className="legend-selected">선택</span>
+        <span className="legend-taken">예약됨</span>
+      </div>
+
+      <div className="stage">STAGE</div>
+      <div className="seat-grid">
         {seats.map((seat) => (
-          <li key={seat.seatId}>
-            <label>
-              <input
-                type="radio"
-                name="seat"
-                disabled={seat.status !== 'AVAILABLE'}
-                checked={selectedSeatId === seat.seatId}
-                onChange={() => setSelectedSeatId(seat.seatId)}
-              />
-              {seat.seatNumber}번 ({seat.grade}) - {seat.price.toLocaleString()}원
-              {seat.status !== 'AVAILABLE' && ' [예약됨]'}
-            </label>
-          </li>
+          <button
+            key={seat.seatId}
+            type="button"
+            className={`seat${selectedSeatId === seat.seatId ? ' selected' : ''}`}
+            disabled={seat.status !== 'AVAILABLE'}
+            aria-pressed={selectedSeatId === seat.seatId}
+            title={`${seat.seatNumber}번 (${seat.grade}) ${seat.price.toLocaleString()}원`}
+            onClick={() => setSelectedSeatId(seat.seatId)}
+          >
+            {seat.seatNumber}
+          </button>
         ))}
-      </ul>
+      </div>
+
+      {selectedSeat ? (
+        <p>
+          선택한 좌석: <strong>{selectedSeat.seatNumber}번 ({selectedSeat.grade})</strong> ·{' '}
+          {selectedSeat.price.toLocaleString()}원
+        </p>
+      ) : (
+        <p>좌석을 선택해주세요.</p>
+      )}
 
       {reserveError && <p role="alert">{reserveError}</p>}
 
