@@ -13,6 +13,8 @@ function MyReservationsPage() {
   const [reservations, setReservations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cancellingId, setCancellingId] = useState(null);
+  const [actionMessage, setActionMessage] = useState('');
 
   useEffect(() => {
     axiosInstance
@@ -28,6 +30,28 @@ function MyReservationsPage() {
       });
   }, []);
 
+  const handleCancel = async (reservationId) => {
+    if (!window.confirm('예매를 취소할까요? 결제 완료 건은 환불 처리됩니다.')) return;
+
+    setCancellingId(reservationId);
+    setActionMessage('');
+    try {
+      const response = await axiosInstance.delete(`/api/v1/reservations/${reservationId}`);
+      setReservations((prev) =>
+        prev.map((r) => (r.reservationId === reservationId ? { ...r, status: 'CANCELLED' } : r))
+      );
+      setActionMessage(response.data.message);
+    } catch (err) {
+      setActionMessage(err.response?.data?.message || '예매 취소에 실패했습니다.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const canCancel = (r) =>
+    (r.status === 'PENDING' || r.status === 'CONFIRMED') &&
+    new Date(r.scheduleStartTime) > new Date();
+
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
 
@@ -35,6 +59,8 @@ function MyReservationsPage() {
     <div>
       <h1>내 예매 목록</h1>
       <Link to="/">공연 목록으로</Link>
+
+      {actionMessage && <p role="status">{actionMessage}</p>}
 
       {reservations.length === 0 && <p>예매 내역이 없습니다.</p>}
 
@@ -46,6 +72,14 @@ function MyReservationsPage() {
             <p>좌석: {r.seats.map((s) => `${s.grade} ${s.seatNumber}번`).join(', ')}</p>
             <p>총 금액: {r.totalPrice.toLocaleString()}원</p>
             <p>상태: {STATUS_LABEL[r.status] || r.status}</p>
+            {canCancel(r) && (
+              <button
+                onClick={() => handleCancel(r.reservationId)}
+                disabled={cancellingId === r.reservationId}
+              >
+                {cancellingId === r.reservationId ? '취소 처리 중...' : '예매 취소'}
+              </button>
+            )}
           </li>
         ))}
       </ul>
