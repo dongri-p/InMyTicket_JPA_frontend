@@ -5,9 +5,13 @@
   --bg: #f7f6f9;
   --surface: #fff;
   --border: #e5e4e7;
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
-  --accent-bg: rgba(124, 58, 237, 0.1);
+  /* 예전 JSP 화면의 민트 단일 테마. 민트 위 글자는 흰색 대비가 낮아 어두운 글자를 쓰고,
+     흰 배경 위 링크·좌석 번호처럼 민트를 글자색으로 쓸 땐 한 단계 진한 --accent-text 사용 */
+  --accent: #83bdbf;
+  --accent-hover: #649fa1;
+  --accent-text: #3d7a7d;
+  --on-accent: #1d2b2c;
+  --accent-bg: rgba(131, 189, 191, 0.15);
   --danger: #dc2626;
   --seat-taken: #d4d2d8;
   --radius: 8px;
@@ -29,9 +33,11 @@
     --bg: #16171d;
     --surface: #1f2028;
     --border: #2e303a;
-    --accent: #a78bfa;
-    --accent-hover: #c4b5fd;
-    --accent-bg: rgba(167, 139, 250, 0.15);
+    --accent: #83bdbf;
+    --accent-hover: #9fd0d2;
+    --accent-text: #9fd0d2;
+    --on-accent: #10191a;
+    --accent-bg: rgba(131, 189, 191, 0.18);
     --danger: #f87171;
     --seat-taken: #3a3c47;
   }
@@ -42,7 +48,8 @@ body {
   background: var(--bg);
 }
 
-#root {
+/* 헤더·장르 메뉴는 1100px, 본문은 그 안에서 880px로 읽기 폭 유지 */
+.site-main {
   max-width: 880px;
   margin: 0 auto;
   padding: 0 16px 48px;
@@ -61,7 +68,7 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 h1 + a {
@@ -92,12 +99,15 @@ button {
   border: 1px solid var(--accent);
   border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 button:hover:not(:disabled) {
   background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
 }
 
 button:disabled {
@@ -155,7 +165,7 @@ input {
   font-size: 13px;
   border: 1px solid var(--accent);
   background: var(--surface);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .seat:hover:not(:disabled) {
@@ -165,7 +175,7 @@ input {
 .seat.selected,
 .seat.selected:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .seat:disabled {
@@ -206,5 +216,173 @@ input {
 @media (max-width: 480px) {
   .seat-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ===== 공통 레이아웃 (Layout.jsx) ===== */
+.top-banner {
+  position: relative;
+  background: var(--accent);
+  color: var(--on-accent);
+  text-align: center;
+  font-size: 15px;
+  line-height: 30px;
+  padding: 0 40px;
+}
+
+.top-banner-close {
+  position: absolute;
+  top: 0;
+  right: max(16px, calc((100% - 1100px) / 2));
+  margin: 0;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 20px;
+  line-height: 30px;
+}
+
+.top-banner-close:hover:not(:disabled) {
+  background: none;
+  color: var(--on-accent);
+}
+
+.site-header {
+  max-width: 1100px;
+  min-height: 80px;
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.site-logo img {
+  display: block;
+  width: 170px;
+  height: auto;
+}
+
+.search-box {
+  flex: 0 1 350px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 2px solid var(--accent);
+  border-radius: 15px;
+  box-sizing: border-box;
+  color: var(--accent-text);
+  background: var(--surface);
+}
+
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  background: none;
+  font-size: 14px;
+}
+
+.member-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.member-menu a,
+.genre-nav a {
+  color: var(--text-h);
+  text-decoration: none;
+}
+
+.member-menu a:hover {
+  color: var(--accent-text);
+}
+
+.member-menu span {
+  color: var(--border);
+}
+
+.link-button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-h);
+  font-size: inherit;
+}
+
+.link-button:hover:not(:disabled) {
+  background: none;
+  color: var(--accent-text);
+}
+
+.genre-nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border);
+}
+
+.genre-nav ul {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.genre-nav li {
+  flex: 1 0 auto;
+  margin: 0;
+  padding: 14px 10px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-h);
+}
+
+.genre-nav li:hover {
+  color: var(--accent-text);
+}
+
+.genre-nav .genre-brand {
+  color: var(--accent-text);
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    flex-wrap: wrap;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .site-logo img {
+    width: 130px;
+  }
+
+  .search-box {
+    order: 3;
+    flex-basis: 100%;
+    height: 40px;
+  }
+
+  .genre-nav li {
+    flex: 0 0 auto;
   }
 }
