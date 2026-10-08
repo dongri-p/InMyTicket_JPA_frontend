@@ -485,11 +485,39 @@ input {
   object-fit: cover;
   border-radius: var(--radius);
   background: var(--seat-taken);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease;
+}
+
+/* 배지를 포스터 위에 겹치기 위한 기준점. hover 시 배지와 포스터가 함께 떠오름 */
+.poster-thumb {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+/* 포스터 왼쪽 위 예매 상태 배지 (회차가 있으면 예매중, 없으면 오픈예정) */
+
+.booking-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(30, 30, 36, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.booking-badge-open {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.poster-card a:hover .poster-thumb {
+  transform: translateY(-4px);
 }
 
 .poster-card a:hover .poster-image {
-  transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
