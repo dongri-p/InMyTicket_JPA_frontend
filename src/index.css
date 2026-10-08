@@ -344,25 +344,37 @@ input {
 }
 
 .genre-nav li {
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   margin: 0;
-  padding: 14px 10px;
+  padding: 0;
   border: none;
   border-radius: 0;
   background: none;
-  text-align: center;
   font-weight: 700;
   white-space: nowrap;
   color: var(--text-h);
 }
 
-.genre-nav li:hover {
+.genre-nav li a {
+  display: block;
+  padding: 14px 14px 11px;
+  border-bottom: 3px solid transparent;
+}
+
+.genre-nav li a:hover {
   color: var(--accent-text);
 }
 
-.genre-nav .genre-brand {
+/* 현재 선택된 장르: 민트 밑줄 */
+.genre-nav li a.active {
   color: var(--accent-text);
-  text-align: right;
+  border-bottom-color: var(--accent);
+}
+
+.genre-nav .genre-brand {
+  margin-left: auto;
+  padding: 14px 10px;
+  color: var(--accent-text);
 }
 
 @media (max-width: 720px) {
@@ -722,5 +734,28 @@ input {
     max-width: 220px;
     margin: 0 auto;
   }
+}
+
+/* ===== 공연 목록 제목·더 보기 ===== */
+.list-count {
+  margin-left: 4px;
+  font-size: 18px;
+  color: var(--accent-text);
+}
+
+.list-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.load-more {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 32px auto 0;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--accent-text);
 }
 

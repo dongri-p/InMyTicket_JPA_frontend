@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { isLoggedIn, logout } from '../api/auth';
 import logo from '../assets/logo.png';
+import { GENRES } from '../constants/genres';
 
-const GENRES = ['콘서트', '뮤지컬/연극', '팬클럽/팬미팅', '클래식', '전시/행사', '테마/지역', '랭킹', '티켓오픈소식', '이벤트'];
 const BANNER_HIDDEN_KEY = 'signupBannerHidden';
 
 function readBannerHidden() {
@@ -19,7 +19,9 @@ function Layout() {
   const [bannerHidden, setBannerHidden] = useState(readBannerHidden);
   const navigate = useNavigate();
   // 로그인/로그아웃 후 화면이 바뀔 때 헤더 메뉴도 다시 그리도록 location 변화를 구독
-  useLocation();
+  const location = useLocation();
+  // 장르 메뉴 선택 표시: 목록 화면('/')에서 현재 ?genre= 값과 같은 메뉴를 강조
+  const currentGenre = location.pathname === '/' ? new URLSearchParams(location.search).get('genre') || '' : null;
   const loggedIn = isLoggedIn();
 
   const closeBanner = () => {
@@ -79,8 +81,16 @@ function Layout() {
 
       <nav className="genre-nav">
         <ul>
-          {GENRES.map((genre) => (
-            <li key={genre}>{genre}</li>
+          {GENRES.map(({ key, label }) => (
+            <li key={label}>
+              <Link
+                to={key ? `/?genre=${key}` : '/'}
+                className={currentGenre === key ? 'active' : undefined}
+                aria-current={currentGenre === key ? 'page' : undefined}
+              >
+                {label}
+              </Link>
+            </li>
           ))}
           <li className="genre-brand">인마이티켓</li>
         </ul>
