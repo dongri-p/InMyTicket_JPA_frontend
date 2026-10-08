@@ -386,3 +386,75 @@ input {
     flex: 0 0 auto;
   }
 }
+
+/* ===== 로그인·회원가입 (예전 login.jsp: 로고 아래 420px 폼 + 민트 버튼) ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.auth-form {
+  max-width: 420px;
+  margin: 40px auto 0;
+  text-align: center;
+}
+
+.auth-form h1 {
+  margin-top: 0;
+}
+
+.auth-form label {
+  text-align: left;
+}
+
+.auth-logo {
+  display: block;
+  width: 220px;
+  height: auto;
+  margin: 0 auto 24px;
+}
+
+.auth-form input {
+  padding: 12px;
+  border-color: var(--accent);
+  border-radius: 4px;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 0 1px var(--accent-hover);
+}
+
+.auth-form .auth-submit,
+.auth-form .auth-secondary {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.auth-form .auth-submit {
+  font-size: 18px;
+}
+
+.auth-form .auth-secondary {
+  background: var(--surface);
+  color: var(--accent-text);
+}
+
+.auth-note {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-links {
+  margin-top: 16px;
+  font-size: 14px;
+}
+

@@ -32,7 +32,7 @@ function SignupPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="auth-form">
       <h1>회원가입</h1>
 
       <div>
@@ -89,11 +89,11 @@ function SignupPage() {
 
       {error && <p role="alert">{error}</p>}
 
-      <button type="submit" disabled={isLoading}>
+      <button type="submit" className="auth-submit" disabled={isLoading}>
         {isLoading ? '가입 중...' : '회원가입'}
       </button>
 
-      <p>
+      <p className="auth-links">
         이미 계정이 있나요? <Link to="/login">로그인</Link>
       </p>
     </form>
