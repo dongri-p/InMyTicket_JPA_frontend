@@ -541,3 +541,158 @@ input {
   }
 }
 
+/* ===== 공연 상세 (멜론티켓식 2단: 왼쪽 포스터 / 오른쪽 정보+예매 박스) ===== */
+.detail {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 40px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.detail-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.detail-category {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.detail-title {
+  margin: 8px 0 24px;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.booking-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 20px;
+}
+
+.booking-box h2 {
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.booking-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 8px 8px;
+  text-align: center;
+}
+
+.booking-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  font-size: 26px;
+}
+
+.booking-empty-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.booking-empty-desc {
+  margin: 4px 0 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.booking-empty button {
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 12px;
+}
+
+.booking-empty-link {
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.schedule-list {
+  margin: 0;
+}
+
+.schedule-list .schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 4px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+}
+
+.schedule-list .schedule-item:last-child {
+  border-bottom: none;
+}
+
+.schedule-time {
+  margin-left: 4px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.schedule-seats {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.schedule-select,
+.schedule-soldout {
+  flex-shrink: 0;
+  padding: 6px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.schedule-select {
+  background: var(--accent);
+  color: var(--on-accent);
+  transition: background-color 0.2s ease;
+}
+
+.schedule-select:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.schedule-soldout {
+  background: var(--seat-taken);
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .detail-poster {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+}
+
