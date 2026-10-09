@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { isLoggedIn, logout } from '../api/auth';
 import logo from '../assets/logo.png';
@@ -20,9 +20,24 @@ function Layout() {
   const navigate = useNavigate();
   // 로그인/로그아웃 후 화면이 바뀔 때 헤더 메뉴도 다시 그리도록 location 변화를 구독
   const location = useLocation();
-  // 장르 메뉴 선택 표시: 목록 화면('/')에서 현재 ?genre= 값과 같은 메뉴를 강조
-  const currentGenre = location.pathname === '/' ? new URLSearchParams(location.search).get('genre') || '' : null;
+  const params = new URLSearchParams(location.search);
+  const urlKeyword = location.pathname === '/' ? params.get('keyword') || '' : '';
+  // 장르 메뉴 선택 표시: 목록 화면('/')에서 현재 ?genre= 값과 같은 메뉴를 강조 (검색 결과 화면에선 강조 없음)
+  const currentGenre = location.pathname === '/' && !urlKeyword ? params.get('genre') || '' : null;
   const loggedIn = isLoggedIn();
+  const [keyword, setKeyword] = useState(urlKeyword);
+
+  // 뒤로가기·장르 메뉴 이동 등으로 URL의 검색어가 바뀌면 입력창도 맞춰 줌
+  useEffect(() => {
+    setKeyword(urlKeyword);
+  }, [urlKeyword]);
+
+  // 검색은 전체 장르 대상. 결과를 URL(?keyword=)에 담아 새로고침·뒤로가기에도 유지되게 함
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const trimmed = keyword.trim();
+    navigate(trimmed ? `/?keyword=${encodeURIComponent(trimmed)}` : '/');
+  };
 
   const closeBanner = () => {
     setBannerHidden(true);
@@ -54,13 +69,22 @@ function Layout() {
           <img src={logo} alt="IN MY TICKET" />
         </Link>
 
-        <div className="search-box">
-          <input type="text" placeholder="찾고싶은 공연을 검색하세요." aria-label="공연 검색" />
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
-            <line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
-        </div>
+        <form className="search-box" role="search" onSubmit={handleSearch}>
+          <input
+            type="search"
+            placeholder="찾고싶은 공연을 검색하세요."
+            aria-label="공연 검색"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            maxLength={50}
+          />
+          <button type="submit" className="search-button" aria-label="검색">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
+              <line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </form>
 
         <div className="member-menu">
           {loggedIn ? (

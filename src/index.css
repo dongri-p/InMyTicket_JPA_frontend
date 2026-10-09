@@ -282,6 +282,8 @@ input {
 
 .search-box input {
   flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
   min-width: 0;
   padding: 0;
   border: none;
@@ -289,6 +291,15 @@ input {
   outline: none;
   background: none;
   font-size: 14px;
+}
+
+.search-button {
+  display: flex;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .member-menu {

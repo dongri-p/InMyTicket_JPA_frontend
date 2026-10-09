@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 function PerformanceListPage() {
   const [searchParams] = useSearchParams();
   const genre = searchParams.get('genre') || '';
+  const keyword = searchParams.get('keyword') || '';
   const [performances, setPerformances] = useState([]);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -17,12 +18,12 @@ function PerformanceListPage() {
 
   const fetchPage = (pageToLoad) =>
     axiosInstance.get('/api/v1/performances', {
-      params: { page: pageToLoad, size: PAGE_SIZE, genre: genre || undefined },
+      params: { page: pageToLoad, size: PAGE_SIZE, genre: genre || undefined, keyword: keyword || undefined },
     });
 
-  // 장르가 바뀌면 첫 페이지부터 다시 조회
+  // 장르나 검색어가 바뀌면 첫 페이지부터 다시 조회
   useEffect(() => {
-    // 장르를 빠르게 바꿨을 때 늦게 도착한 이전 장르 응답이 화면을 덮어쓰지 않도록 무시
+    // 장르·검색어를 빠르게 바꿨을 때 늦게 도착한 이전 응답이 화면을 덮어쓰지 않도록 무시
     let ignore = false;
     setIsLoading(true);
     setError('');
@@ -45,7 +46,7 @@ function PerformanceListPage() {
       ignore = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [genre]);
+  }, [genre, keyword]);
 
   const loadMore = () => {
     setIsLoadingMore(true);
@@ -65,14 +66,16 @@ function PerformanceListPage() {
   if (isLoading) return <p>로딩 중...</p>;
   if (error && performances.length === 0) return <p role="alert">{error}</p>;
 
-  const title = genre ? genreLabel(genre) ?? '공연 목록' : '전체 공연';
+  const genreTitle = genre ? genreLabel(genre) ?? '공연 목록' : '전체 공연';
+  const title = keyword ? `'${keyword}' 검색 결과` : genreTitle;
+  const emptyMessage = keyword ? '검색어와 일치하는 공연이 없어요.' : '이 장르에는 아직 등록된 공연이 없어요.';
 
   return (
     <div>
       <h1 className="list-title">
         {title} <span className="list-count">{totalCount}</span>
       </h1>
-      {performances.length === 0 && <p className="list-empty">이 장르에는 아직 등록된 공연이 없어요.</p>}
+      {performances.length === 0 && <p className="list-empty">{emptyMessage}</p>}
       <ul className="poster-grid">
         {performances.map((p) => (
           <li key={p.id} className="poster-card">
