@@ -770,3 +770,71 @@ input {
   color: var(--accent-text);
 }
 
+
+/* ===== 관리자 화면 ===== */
+.admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.admin-card h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  color: var(--text-h);
+}
+
+.admin-card select {
+  font: inherit;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-h);
+}
+
+.admin-search {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-search button {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.admin-results {
+  margin: 8px 0 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.admin-results li {
+  padding: 6px 10px;
+  margin-bottom: 4px;
+}
+
+.admin-results .link-button,
+.admin-selected .link-button {
+  text-align: left;
+}
+
+.admin-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.admin-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.admin-success {
+  color: var(--accent-text);
+}
