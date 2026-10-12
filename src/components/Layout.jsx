@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { isLoggedIn, logout } from '../api/auth';
+import { isAdmin, isLoggedIn, logout } from '../api/auth';
 import logo from '../assets/logo.png';
 import { GENRES } from '../constants/genres';
 
@@ -25,6 +25,7 @@ function Layout() {
   // 장르 메뉴 선택 표시: 목록 화면('/')에서 현재 ?genre= 값과 같은 메뉴를 강조 (검색 결과 화면에선 강조 없음)
   const currentGenre = location.pathname === '/' && !urlKeyword ? params.get('genre') || '' : null;
   const loggedIn = isLoggedIn();
+  const admin = isAdmin();
   const [keyword, setKeyword] = useState(urlKeyword);
 
   // 뒤로가기·장르 메뉴 이동 등으로 URL의 검색어가 바뀌면 입력창도 맞춰 줌
@@ -89,6 +90,12 @@ function Layout() {
         <div className="member-menu">
           {loggedIn ? (
             <>
+              {admin && (
+                <>
+                  <Link to="/admin">관리자</Link>
+                  <span aria-hidden="true">|</span>
+                </>
+              )}
               <Link to="/my-reservations">마이페이지</Link>
               <span aria-hidden="true">|</span>
               <button type="button" className="link-button" onClick={handleLogout}>로그아웃</button>
