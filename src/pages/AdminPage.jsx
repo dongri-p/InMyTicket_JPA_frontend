@@ -177,22 +177,134 @@ function ScheduleForm({ halls }) {
   );
 }
 
+function HallForm({ onCreated }) {
+  const [form, setForm] = useState({ name: '', address: '', totalSeats: '' });
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    setIsSaving(true);
+    try {
+      await axiosInstance.post('/api/v1/halls', { ...form, totalSeats: Number(form.totalSeats) });
+      setMessage(`${form.name} 공연장을 등록했습니다.`);
+      setForm({ name: '', address: '', totalSeats: '' });
+      onCreated();
+    } catch (err) {
+      setError(errorMessage(err, '공연장 등록에 실패했습니다.'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="admin-card">
+      <h2>공연장 등록</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="hallName">이름</label>
+          <input id="hallName" name="name" value={form.name} onChange={handleChange} maxLength={255} required />
+        </div>
+        <div>
+          <label htmlFor="hallAddress">주소 (선택)</label>
+          <input id="hallAddress" name="address" value={form.address} onChange={handleChange} maxLength={255} />
+        </div>
+        <div>
+          <label htmlFor="hallSeats">정원</label>
+          <input
+            id="hallSeats"
+            name="totalSeats"
+            type="number"
+            value={form.totalSeats}
+            onChange={handleChange}
+            min={1}
+            max={100000}
+            required
+          />
+        </div>
+
+        {error && <p role="alert">{error}</p>}
+        {message && <p role="status" className="admin-success">{message}</p>}
+
+        <button type="submit" disabled={isSaving}>
+          {isSaving ? '등록 중...' : '공연장 등록'}
+        </button>
+      </form>
+    </section>
+  );
+}
+
+const countPerformances = async () => {
+  const response = await axiosInstance.get('/api/v1/performances', { params: { size: 1 } });
+  return response.data.totalCount;
+};
+
+// 동기화 API는 KOPIS 호출이 실패해도 "완료"로 응답하므로, 전후 공연 수를 비교해서 실제 결과를 보여줌
+function SyncPanel() {
+  const [result, setResult] = useState('');
+  const [error, setError] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setError('');
+    setResult('');
+    setIsSyncing(true);
+    try {
+      const before = await countPerformances();
+      await axiosInstance.post('/api/v1/performances/sync');
+      const after = await countPerformances();
+      setResult(
+        after > before
+          ? `공연 ${after - before}건을 새로 가져왔습니다. (전체 ${after}건)`
+          : `새로 추가된 공연이 없습니다. (전체 ${after}건) 이미 받아온 공연이거나 KOPIS 응답이 실패했을 수 있어요.`
+      );
+    } catch (err) {
+      setError(errorMessage(err, '동기화에 실패했습니다.'));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  return (
+    <section className="admin-card">
+      <h2>공연 정보 동기화</h2>
+      <p className="admin-hint">KOPIS에서 장르별 최신 공연을 받아와 아직 없는 공연만 추가합니다. 몇 초 걸릴 수 있어요.</p>
+      {error && <p role="alert">{error}</p>}
+      {result && <p role="status" className="admin-success">{result}</p>}
+      <button type="button" onClick={handleSync} disabled={isSyncing}>
+        {isSyncing ? '가져오는 중...' : 'KOPIS에서 가져오기'}
+      </button>
+    </section>
+  );
+}
+
 function AdminPage() {
   const [halls, setHalls] = useState([]);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const loadHalls = () => {
     axiosInstance
       .get('/api/v1/halls')
       .then((response) => setHalls(response.data.data))
       .catch((err) => setError(errorMessage(err, '공연장 목록을 불러오지 못했습니다.')));
-  }, []);
+  };
+
+  useEffect(loadHalls, []);
 
   return (
     <div className="admin">
       <h1>관리자</h1>
       {error && <p role="alert">{error}</p>}
       <ScheduleForm halls={halls} />
+      <HallForm onCreated={loadHalls} />
+      <SyncPanel />
     </div>
   );
 }
