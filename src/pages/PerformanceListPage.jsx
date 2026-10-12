@@ -94,10 +94,8 @@ function PerformanceListPage() {
               </div>
               <strong className="poster-title">{p.title}</strong>
             </Link>
-            <p className="poster-meta">
-              {p.category}
-              <span className="poster-status">{p.status}</span>
-            </p>
+            {/* KOPIS 공연 상태(공연예정 등)는 포스터의 예매 배지와 헷갈려서 목록에선 빼고 상세 화면에만 표시 */}
+            <p className="poster-meta">{p.category}</p>
           </li>
         ))}
       </ul>
