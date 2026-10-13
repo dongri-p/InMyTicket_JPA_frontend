@@ -14,6 +14,20 @@ function nowForInput() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// 2026-11-05 -> '11.05'
+const shortDate = (date) => date.slice(5).replace('-', '.');
+
+// 시작 시간 선택 범위: 지금 이후이면서 공연 기간(첫날 00:00 ~ 마지막 날 23:59) 안. 기간을 모르면 지금 이후만
+// 같은 형식(YYYY-MM-DDTHH:mm)끼리는 문자열 비교가 곧 시간 비교라 더 늦은 쪽을 min으로 고름
+function startTimeRange(performance) {
+  const now = nowForInput();
+  const periodStart = performance?.startDate && `${performance.startDate}T00:00`;
+  return {
+    min: periodStart && periodStart > now ? periodStart : now,
+    max: performance?.endDate ? `${performance.endDate}T23:59` : undefined,
+  };
+}
+
 function ScheduleForm({ halls }) {
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState(null);
@@ -26,6 +40,7 @@ function ScheduleForm({ halls }) {
   const [isSaving, setIsSaving] = useState(false);
 
   const hall = halls.find((h) => String(h.hallId) === hallId);
+  const range = startTimeRange(performance);
 
   const searchPerformances = async () => {
     setError('');
@@ -88,6 +103,11 @@ function ScheduleForm({ halls }) {
           {performance ? (
             <div className="admin-selected">
               <span>{performance.title}</span>
+              {performance.startDate && performance.endDate && (
+                <span className="admin-hint">
+                  {shortDate(performance.startDate)} ~ {shortDate(performance.endDate)}
+                </span>
+              )}
               <button type="button" className="link-button" onClick={() => setPerformance(null)}>변경</button>
             </div>
           ) : (
@@ -111,7 +131,11 @@ function ScheduleForm({ halls }) {
                       <button type="button" className="link-button" onClick={() => setPerformance(p)}>
                         {p.title}
                       </button>
-                      <span className="admin-hint"> {p.category} · {p.status}</span>
+                      <span className="admin-hint">
+                        {' '}
+                        {p.category}
+                        {p.startDate && p.endDate && ` · ${shortDate(p.startDate)} ~ ${shortDate(p.endDate)}`}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -142,7 +166,8 @@ function ScheduleForm({ halls }) {
             id="startTime"
             type="datetime-local"
             value={startTime}
-            min={nowForInput()}
+            min={range.min}
+            max={range.max}
             onChange={(e) => setStartTime(e.target.value)}
             required
           />
