@@ -14,6 +14,13 @@ function formatSchedule(startTime) {
   };
 }
 
+// 2026-11-05, 2026-11-08 -> '2026.11.05 ~ 2026.11.08' (하루짜리 공연은 날짜 하나만)
+function formatPeriod(startDate, endDate) {
+  if (!startDate || !endDate) return null;
+  const dot = (date) => date.replaceAll('-', '.');
+  return startDate === endDate ? dot(startDate) : `${dot(startDate)} ~ ${dot(endDate)}`;
+}
+
 function PerformanceDetailPage() {
   const { performanceId } = useParams();
   const [performance, setPerformance] = useState(null);
@@ -42,6 +49,8 @@ function PerformanceDetailPage() {
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
 
+  const period = formatPeriod(performance.startDate, performance.endDate);
+
   return (
     <div className="detail">
       <div className="detail-poster">
@@ -58,6 +67,23 @@ function PerformanceDetailPage() {
           <span className="poster-status">{performance.status}</span>
         </p>
         <h1 className="detail-title">{performance.title}</h1>
+
+        {(period || performance.venueName) && (
+          <dl className="detail-info">
+            {period && (
+              <>
+                <dt>기간</dt>
+                <dd>{period}</dd>
+              </>
+            )}
+            {performance.venueName && (
+              <>
+                <dt>장소</dt>
+                <dd>{performance.venueName}</dd>
+              </>
+            )}
+          </dl>
+        )}
 
         <section className="booking-box" aria-labelledby="booking-heading">
           <h2 id="booking-heading">예매</h2>
