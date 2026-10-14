@@ -777,6 +777,38 @@ input {
 }
 
 /* ===== 공연 목록 제목·더 보기 ===== */
+/* 예매 상태 필터 칩 (전체/예매중/오픈예정/공연종료) */
+.status-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.status-chip {
+  margin: 0;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.status-chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}
+
+.status-chip-active,
+.status-chip-active:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
 .list-count {
   margin-left: 4px;
   font-size: 18px;

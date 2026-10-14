@@ -6,6 +6,14 @@ import { formatPeriod, isEnded, todayString } from '../utils/date';
 
 const PAGE_SIZE = 20;
 
+// 예매 상태 필터 (?status=). key는 백엔드 BookingStatus 값과 같아야 함, ''는 전체
+const STATUS_FILTERS = [
+  { key: '', label: '전체' },
+  { key: 'ON_SALE', label: '예매중' },
+  { key: 'UPCOMING', label: '오픈예정' },
+  { key: 'ENDED', label: '공연종료' },
+];
+
 // 포스터 배지: 시작 전 회차가 있으면 예매중, 종료일이 지났으면 공연종료, 나머지(기간 모름 포함)는 오픈예정
 function bookingBadge(performance, today) {
   if (performance.upcomingScheduleCount > 0) {
@@ -18,10 +26,13 @@ function bookingBadge(performance, today) {
 }
 
 function PerformanceListPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const genre = searchParams.get('genre') || '';
   const keyword = searchParams.get('keyword') || '';
+  // 주소창에 모르는 값이 들어오면 서버가 400을 주므로 아는 값만 사용 (나머지는 전체)
+  const statusParam = searchParams.get('status') || '';
+  const status = STATUS_FILTERS.some((f) => f.key === statusParam) ? statusParam : '';
   const [performances, setPerformances] = useState([]);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -31,10 +42,16 @@ function PerformanceListPage() {
 
   const fetchPage = (pageToLoad) =>
     axiosInstance.get('/api/v1/performances', {
-      params: { page: pageToLoad, size: PAGE_SIZE, genre: genre || undefined, keyword: keyword || undefined },
+      params: {
+        page: pageToLoad,
+        size: PAGE_SIZE,
+        genre: genre || undefined,
+        keyword: keyword || undefined,
+        status: status || undefined,
+      },
     });
 
-  // 장르나 검색어가 바뀌면 첫 페이지부터 다시 조회
+  // 장르·검색어·예매 상태가 바뀌면 첫 페이지부터 다시 조회
   useEffect(() => {
     // 장르·검색어를 빠르게 바꿨을 때 늦게 도착한 이전 응답이 화면을 덮어쓰지 않도록 무시
     let ignore = false;
@@ -59,7 +76,15 @@ function PerformanceListPage() {
       ignore = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [genre, keyword]);
+  }, [genre, keyword, status]);
+
+  // 장르·검색어는 그대로 두고 예매 상태만 바꿈 (URL에 남겨서 새로고침·뒤로가기에도 유지)
+  const changeStatus = (key) => {
+    const next = new URLSearchParams(searchParams);
+    if (key) next.set('status', key);
+    else next.delete('status');
+    setSearchParams(next);
+  };
 
   const loadMore = () => {
     setIsLoadingMore(true);
@@ -82,13 +107,30 @@ function PerformanceListPage() {
   const genreTitle = genre ? genreLabel(genre) ?? '공연 목록' : '전체 공연';
   const title = keyword ? `'${keyword}' 검색 결과` : genreTitle;
   const today = todayString();
-  const emptyMessage = keyword ? '검색어와 일치하는 공연이 없어요.' : '이 장르에는 아직 등록된 공연이 없어요.';
+  const emptyMessage = status
+    ? '조건에 맞는 공연이 없어요.'
+    : keyword
+      ? '검색어와 일치하는 공연이 없어요.'
+      : '이 장르에는 아직 등록된 공연이 없어요.';
 
   return (
     <div>
       <h1 className="list-title">
         {title} <span className="list-count">{totalCount}</span>
       </h1>
+      <div className="status-filter" role="group" aria-label="예매 상태">
+        {STATUS_FILTERS.map(({ key, label }) => (
+          <button
+            key={key || 'all'}
+            type="button"
+            className={key === status ? 'status-chip status-chip-active' : 'status-chip'}
+            aria-pressed={key === status}
+            onClick={() => changeStatus(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       {performances.length === 0 && <p className="list-empty">{emptyMessage}</p>}
       <ul className="poster-grid">
         {performances.map((p) => (
