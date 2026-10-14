@@ -14,13 +14,17 @@ function PaymentResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const reservationId = location.state?.reservationId;
+  // 이미 결제가 끝난 기록(뒤로가기로 다시 들어온 경우)이면 결제 요청 없이 그 결과를 보여줌
+  const paidResult = location.state?.paymentResult;
   const hasRequestedRef = useRef(false);
 
-  const [isProcessing, setIsProcessing] = useState(true);
-  const [result, setResult] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(!paidResult);
+  const [result, setResult] = useState(paidResult ?? null);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (paidResult) return;
+
     if (!reservationId) {
       setIsProcessing(false);
       setError('예약 정보가 없습니다. 예매 화면부터 다시 진행해주세요.');
@@ -37,6 +41,9 @@ function PaymentResultPage() {
       })
       .then((response) => {
         setResult(response.data);
+        // 이 화면의 방문 기록에서 예약 번호를 결제 결과로 바꿔 둠. 그대로 두면 다른 화면에 갔다가
+        // 뒤로가기로 돌아왔을 때 결제 요청이 다시 나가고, 서버가 막으면서 오류 메시지가 보임
+        navigate(location.pathname, { replace: true, state: { paymentResult: response.data } });
       })
       .catch((err) => {
         const message = err.response?.data?.message || '결제에 실패했습니다.';
@@ -45,7 +52,8 @@ function PaymentResultPage() {
       .finally(() => {
         setIsProcessing(false);
       });
-  }, [reservationId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reservationId, paidResult]);
 
   if (isProcessing) return <p>결제 처리 중...</p>;
   if (error) return <p role="alert">{error}</p>;
