@@ -36,7 +36,8 @@ function SignupPage() {
       <h1>회원가입</h1>
 
       <div>
-        <label htmlFor="loginId">아이디 (4~20자)</label>
+        <label htmlFor="loginId">아이디 (영문·숫자 4~20자)</label>
+        {/* 서버 검증(@Pattern)과 같은 규칙. 공백·한글·특수문자는 제출 전에 브라우저가 막음 */}
         <input
           id="loginId"
           name="loginId"
@@ -44,6 +45,9 @@ function SignupPage() {
           onChange={handleChange}
           minLength={4}
           maxLength={20}
+          pattern="[A-Za-z0-9]+"
+          title="영문과 숫자만 사용할 수 있습니다."
+          autoComplete="username"
           required
         />
       </div>
