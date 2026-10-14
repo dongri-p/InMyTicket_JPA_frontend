@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { isEnded } from '../utils/date';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -50,6 +51,8 @@ function PerformanceDetailPage() {
   if (error) return <p role="alert">{error}</p>;
 
   const period = formatPeriod(performance.startDate, performance.endDate);
+  const ended = isEnded(performance);
+  const now = new Date();
 
   return (
     <div className="detail">
@@ -91,15 +94,27 @@ function PerformanceDetailPage() {
           {schedules.length === 0 ? (
             <div className="booking-empty">
               <span className="booking-empty-icon" aria-hidden="true">🎫</span>
-              <p className="booking-empty-title">아직 예매 가능한 회차가 없어요</p>
-              <p className="booking-empty-desc">회차가 오픈되면 여기서 바로 예매할 수 있어요.</p>
-              <button type="button" disabled>예매 오픈 예정</button>
+              {ended ? (
+                <>
+                  <p className="booking-empty-title">공연이 종료됐어요</p>
+                  <p className="booking-empty-desc">{performance.endDate.replaceAll('-', '.')}에 끝난 공연이에요.</p>
+                  <button type="button" disabled>공연 종료</button>
+                </>
+              ) : (
+                <>
+                  <p className="booking-empty-title">아직 예매 가능한 회차가 없어요</p>
+                  <p className="booking-empty-desc">회차가 오픈되면 여기서 바로 예매할 수 있어요.</p>
+                  <button type="button" disabled>예매 오픈 예정</button>
+                </>
+              )}
               <Link to="/" className="booking-empty-link">다른 공연 둘러보기 →</Link>
             </div>
           ) : (
             <ul className="schedule-list">
               {schedules.map((s) => {
                 const { date, time } = formatSchedule(s.startTime);
+                // 이미 시작한 회차는 서버가 예약을 거절하므로, 좌석 선택까지 들어가지 않도록 여기서 막음
+                const started = new Date(s.startTime) <= now;
                 const soldOut = s.availableSeatCount === 0;
                 return (
                   <li key={s.scheduleId} className="schedule-item">
@@ -109,7 +124,9 @@ function PerformanceDetailPage() {
                         잔여 {s.availableSeatCount}/{s.totalSeatCount}석
                       </p>
                     </div>
-                    {soldOut ? (
+                    {started ? (
+                      <span className="schedule-soldout">마감</span>
+                    ) : soldOut ? (
                       <span className="schedule-soldout">매진</span>
                     ) : (
                       <Link to={`/seats/${s.scheduleId}`} className="schedule-select">
