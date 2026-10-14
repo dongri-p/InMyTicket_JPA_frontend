@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { genreLabel } from '../constants/genres';
 import { isEnded, todayString } from '../utils/date';
@@ -19,6 +19,7 @@ function bookingBadge(performance, today) {
 
 function PerformanceListPage() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const genre = searchParams.get('genre') || '';
   const keyword = searchParams.get('keyword') || '';
   const [performances, setPerformances] = useState([]);
@@ -92,7 +93,8 @@ function PerformanceListPage() {
       <ul className="poster-grid">
         {performances.map((p) => (
           <li key={p.id} className="poster-card">
-            <Link to={`/performances/${p.id}`}>
+            {/* 상세에서 '다른 공연 둘러보기'를 누르면 보던 장르·검색 목록으로 돌아가도록 현재 쿼리를 넘김 */}
+            <Link to={`/performances/${p.id}`} state={{ listSearch: location.search }}>
               <div className="poster-thumb">
                 {p.posterUrl ? (
                   <img src={p.posterUrl} alt="" loading="lazy" className="poster-image" />

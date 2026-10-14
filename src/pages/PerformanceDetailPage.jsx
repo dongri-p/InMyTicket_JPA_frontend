@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { isEnded } from '../utils/date';
 
@@ -24,6 +24,7 @@ function formatPeriod(startDate, endDate) {
 
 function PerformanceDetailPage() {
   const { performanceId } = useParams();
+  const location = useLocation();
   const [performance, setPerformance] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +54,8 @@ function PerformanceDetailPage() {
   const period = formatPeriod(performance.startDate, performance.endDate);
   const ended = isEnded(performance);
   const now = new Date();
+  // 목록에서 들어왔으면 그 목록(장르·검색어 유지)으로, 주소로 바로 들어왔으면 전체 목록으로
+  const listPath = `/${location.state?.listSearch ?? ''}`;
 
   return (
     <div className="detail">
@@ -107,7 +110,7 @@ function PerformanceDetailPage() {
                   <button type="button" disabled>예매 오픈 예정</button>
                 </>
               )}
-              <Link to="/" className="booking-empty-link">다른 공연 둘러보기 →</Link>
+              <Link to={listPath} className="booking-empty-link">다른 공연 둘러보기 →</Link>
             </div>
           ) : (
             <ul className="schedule-list">
