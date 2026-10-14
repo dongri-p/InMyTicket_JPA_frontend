@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { isEnded } from '../utils/date';
+import { formatPeriod, isEnded } from '../utils/date';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -13,13 +13,6 @@ function formatSchedule(startTime) {
     date: `${d.getMonth() + 1}.${pad(d.getDate())}(${WEEKDAYS[d.getDay()]})`,
     time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
   };
-}
-
-// 2026-11-05, 2026-11-08 -> '2026.11.05 ~ 2026.11.08' (하루짜리 공연은 날짜 하나만)
-function formatPeriod(startDate, endDate) {
-  if (!startDate || !endDate) return null;
-  const dot = (date) => date.replaceAll('-', '.');
-  return startDate === endDate ? dot(startDate) : `${dot(startDate)} ~ ${dot(endDate)}`;
 }
 
 function PerformanceDetailPage() {

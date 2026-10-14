@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { genreLabel } from '../constants/genres';
-import { isEnded, todayString } from '../utils/date';
+import { formatPeriod, isEnded, todayString } from '../utils/date';
 
 const PAGE_SIZE = 20;
 
@@ -107,6 +107,10 @@ function PerformanceListPage() {
             </Link>
             {/* KOPIS 공연 상태(공연예정 등)는 포스터의 예매 배지와 헷갈려서 목록에선 빼고 상세 화면에만 표시 */}
             <p className="poster-meta">{p.category}</p>
+            {/* 오픈예정 공연도 언제 하는지 알 수 있게 공연 기간 표시 (기간을 모르면 생략) */}
+            {formatPeriod(p.startDate, p.endDate) && (
+              <p className="poster-period">{formatPeriod(p.startDate, p.endDate)}</p>
+            )}
           </li>
         ))}
       </ul>
