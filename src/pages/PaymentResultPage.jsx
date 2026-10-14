@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 // crypto.randomUUID()는 보안 컨텍스트(HTTPS/localhost)에서만 제공되므로,
@@ -12,6 +12,7 @@ function generatePaymentKey() {
 
 function PaymentResultPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const reservationId = location.state?.reservationId;
   const hasRequestedRef = useRef(false);
 
@@ -54,6 +55,14 @@ function PaymentResultPage() {
       <h1>결제 완료</h1>
       <p>{result.message}</p>
       <p>결제 번호: {result.id}</p>
+
+      {/* 결제가 끝나면 다음에 할 일(예매 확인, 다른 공연 보기)로 바로 갈 수 있게 */}
+      <button type="button" onClick={() => navigate('/my-reservations')}>
+        내 예매 보기
+      </button>
+      <button type="button" onClick={() => navigate('/')}>
+        다른 공연 보기
+      </button>
     </div>
   );
 }
