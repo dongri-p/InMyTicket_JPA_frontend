@@ -517,7 +517,7 @@ input {
   transition: transform 0.2s ease;
 }
 
-/* 포스터 왼쪽 위 예매 상태 배지 (회차가 있으면 예매중, 없으면 오픈예정) */
+/* 포스터 왼쪽 위 예매 상태 배지 (회차가 있으면 예매중, 종료일이 지났으면 공연종료, 나머지는 오픈예정) */
 
 .booking-badge {
   position: absolute;
@@ -534,6 +534,11 @@ input {
 .booking-badge-open {
   background: var(--accent);
   color: var(--on-accent);
+}
+
+/* 끝난 공연은 배지를 옅게 해서 예매중·오픈예정과 구분 */
+.booking-badge-ended {
+  background: rgba(120, 120, 128, 0.85);
 }
 
 .poster-card a:hover .poster-thumb {
