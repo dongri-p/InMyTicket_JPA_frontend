@@ -47,6 +47,9 @@ function PerformanceDetailPage() {
   const period = formatPeriod(performance.startDate, performance.endDate);
   const ended = isEnded(performance);
   const now = new Date();
+  // 서버는 시작 시각 순으로 주므로, 예매할 수 있는 회차가 먼저 보이게 이미 시작한(마감) 회차만 뒤로 보냄 (각각의 날짜순은 유지)
+  const isStarted = (s) => new Date(s.startTime) <= now;
+  const orderedSchedules = [...schedules.filter((s) => !isStarted(s)), ...schedules.filter(isStarted)];
   // 목록에서 들어왔으면 그 목록(장르·검색어 유지)으로, 주소로 바로 들어왔으면 전체 목록으로
   const listPath = `/${location.state?.listSearch ?? ''}`;
 
@@ -119,10 +122,10 @@ function PerformanceDetailPage() {
             </div>
           ) : (
             <ul className="schedule-list">
-              {schedules.map((s) => {
+              {orderedSchedules.map((s) => {
                 const { date, time } = formatSchedule(s.startTime);
                 // 이미 시작한 회차는 서버가 예약을 거절하므로, 좌석 선택까지 들어가지 않도록 여기서 막음
-                const started = new Date(s.startTime) <= now;
+                const started = isStarted(s);
                 const soldOut = s.availableSeatCount === 0;
                 return (
                   <li key={s.scheduleId} className="schedule-item">
