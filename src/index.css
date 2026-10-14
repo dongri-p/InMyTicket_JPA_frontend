@@ -649,6 +649,14 @@ input {
   color: var(--text-h);
 }
 
+/* 장소 옆 '지도 보기' (새 탭으로 네이버 지도 검색) */
+.detail-map-link {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+
 .booking-box {
   border: 1px solid var(--border);
   border-radius: var(--radius);

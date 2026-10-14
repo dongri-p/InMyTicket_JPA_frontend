@@ -78,7 +78,19 @@ function PerformanceDetailPage() {
             {performance.venueName && (
               <>
                 <dt>장소</dt>
-                <dd>{performance.venueName}</dd>
+                <dd>
+                  {performance.venueName}
+                  {/* KOPIS는 공연장 이름만 줘서 정확한 주소 대신 네이버 지도 검색으로 연결 (API 키 불필요)
+                      '소극장 마당 [대전]'의 지역 표기는 검색에 도움이 되므로 괄호만 뺌 */}
+                  <a
+                    href={`https://map.naver.com/p/search/${encodeURIComponent(performance.venueName.replace(/[[\]]/g, ''))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="detail-map-link"
+                  >
+                    지도 보기
+                  </a>
+                </dd>
               </>
             )}
           </dl>
