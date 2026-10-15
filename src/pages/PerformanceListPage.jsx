@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { genreLabel } from '../constants/genres';
@@ -93,6 +93,18 @@ function PerformanceListPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genre, keyword, status, region]);
 
+  // 폰 폭에선 칩 줄이 가로 스크롤이라, 선택된 칩(예: 지역 '전라·제주')이 오른쪽 밖에 있으면 안 보임 -> 그 줄만 가로로 밀어 보이게 함
+  // (scrollIntoView는 페이지 세로 위치까지 움직일 수 있어서 줄의 scrollLeft만 조정)
+  const filtersRef = useRef(null);
+  useEffect(() => {
+    filtersRef.current?.querySelectorAll('.filter-chips').forEach((row) => {
+      const active = row.querySelector('.status-chip-active');
+      if (!active) return;
+      const overflow = active.getBoundingClientRect().right - row.getBoundingClientRect().right;
+      if (overflow > 0) row.scrollLeft += overflow + 16;
+    });
+  }, [isLoading, status, region]);
+
   // 다른 조건은 그대로 두고 예매 상태(status)나 지역(region) 하나만 바꿈 (URL에 남겨서 새로고침·뒤로가기에도 유지)
   const changeFilter = (name, key) => {
     const next = new URLSearchParams(searchParams);
@@ -104,17 +116,20 @@ function PerformanceListPage() {
   const filterChips = (name, label, filters, selected) => (
     <div className="status-filter" role="group" aria-label={label}>
       <span className="filter-label">{label}</span>
-      {filters.map(({ key, label: chipLabel }) => (
-        <button
-          key={key || 'all'}
-          type="button"
-          className={key === selected ? 'status-chip status-chip-active' : 'status-chip'}
-          aria-pressed={key === selected}
-          onClick={() => changeFilter(name, key)}
-        >
-          {chipLabel}
-        </button>
-      ))}
+      {/* 라벨은 고정하고 칩만 감싸서, 폰 폭에서 칩 줄만 가로 스크롤되게 함 */}
+      <div className="filter-chips">
+        {filters.map(({ key, label: chipLabel }) => (
+          <button
+            key={key || 'all'}
+            type="button"
+            className={key === selected ? 'status-chip status-chip-active' : 'status-chip'}
+            aria-pressed={key === selected}
+            onClick={() => changeFilter(name, key)}
+          >
+            {chipLabel}
+          </button>
+        ))}
+      </div>
     </div>
   );
 
@@ -150,7 +165,7 @@ function PerformanceListPage() {
       <h1 className="list-title">
         {title} <span className="list-count">{totalCount}</span>
       </h1>
-      <div className="list-filters">
+      <div className="list-filters" ref={filtersRef}>
         {filterChips('status', '예매 상태', STATUS_FILTERS, status)}
         {filterChips('region', '지역', REGION_FILTERS, region)}
       </div>

@@ -801,13 +801,20 @@ input {
 
 .status-filter {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
 /* 줄마다 '전체' 칩이 있어 어느 조건인지 구분되도록 앞에 붙이는 라벨 */
 .filter-label {
+  flex: 0 0 auto;
   min-width: 64px;
   color: var(--text-muted);
   font-size: 13px;
@@ -836,6 +843,24 @@ input {
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 700;
+}
+
+/* 폰 폭에서는 칩이 여러 줄로 접혀 칸을 많이 차지함 -> 라벨은 고정, 칩만 장르 메뉴처럼 한 줄 가로 스크롤 */
+@media (max-width: 480px) {
+  .filter-label {
+    min-width: 52px;
+  }
+
+  .filter-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .status-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
 }
 
 .list-count {
