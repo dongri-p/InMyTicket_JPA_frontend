@@ -786,11 +786,26 @@ input {
 
 /* ===== 공연 목록 제목·더 보기 ===== */
 /* 예매 상태 필터 칩 (전체/예매중/오픈예정/공연종료) */
+.list-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 20px;
+}
+
 .status-filter {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  margin: 0 0 20px;
+}
+
+/* 줄마다 '전체' 칩이 있어 어느 조건인지 구분되도록 앞에 붙이는 라벨 */
+.filter-label {
+  min-width: 64px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .status-chip {
