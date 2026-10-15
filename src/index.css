@@ -676,7 +676,7 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 8px 8px;
+  padding: 24px 8px 0;
   text-align: center;
 }
 
@@ -705,11 +705,17 @@ input {
 
 .booking-empty button {
   width: 100%;
-  margin: 0 0 12px;
+  margin: 0;
   padding: 12px;
 }
 
-.booking-empty-link {
+/* 예매 박스 맨 아래 '다른 공연 둘러보기' (회차가 있든 없든 항상 표시) */
+.booking-more {
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.booking-more-link {
   font-size: 14px;
   text-decoration: none;
 }

@@ -118,7 +118,6 @@ function PerformanceDetailPage() {
                   <button type="button" disabled>예매 오픈 예정</button>
                 </>
               )}
-              <Link to={listPath} className="booking-empty-link">다른 공연 둘러보기 →</Link>
             </div>
           ) : (
             <ul className="schedule-list">
@@ -149,6 +148,10 @@ function PerformanceDetailPage() {
               })}
             </ul>
           )}
+          {/* 회차 유무(예매중·오픈예정·공연종료)와 상관없이 항상 보여서, 예매 가능한 공연에서도 뒤로가기 없이 목록으로 돌아감 */}
+          <p className="booking-more">
+            <Link to={listPath} className="booking-more-link">다른 공연 둘러보기 →</Link>
+          </p>
         </section>
       </div>
     </div>
