@@ -51,7 +51,8 @@ function Layout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login', { replace: true });
+    // 로그인 없이도 둘러볼 수 있으므로 로그아웃 후엔 공연 목록으로
+    navigate('/', { replace: true });
   };
 
   return (

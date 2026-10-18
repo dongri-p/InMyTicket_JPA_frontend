@@ -21,10 +21,11 @@ createRoot(document.getElementById('root')).render(
         <Route element={<Layout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/" element={<RequireAuth><PerformanceListPage /></RequireAuth>} />
+          {/* 공연 목록·상세·좌석은 로그인 없이 둘러볼 수 있음. 예매 버튼을 누를 때 로그인 안내 */}
+          <Route path="/" element={<PerformanceListPage />} />
           <Route path="/my-reservations" element={<RequireAuth><MyReservationsPage /></RequireAuth>} />
-          <Route path="/performances/:performanceId" element={<RequireAuth><PerformanceDetailPage /></RequireAuth>} />
-          <Route path="/seats/:scheduleId" element={<RequireAuth><SeatSelectionPage /></RequireAuth>} />
+          <Route path="/performances/:performanceId" element={<PerformanceDetailPage />} />
+          <Route path="/seats/:scheduleId" element={<SeatSelectionPage />} />
           <Route path="/payment/result" element={<RequireAuth><PaymentResultPage /></RequireAuth>} />
           <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         </Route>

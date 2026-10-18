@@ -14,8 +14,11 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  // 예매 버튼이나 회원 전용 화면에서 넘어왔으면 로그인 뒤 그 화면으로 돌려보냄 (선택해 둔 좌석 같은 state도 함께)
+  const from = location.state?.from;
+  const returnPath = from ? `${from.pathname}${from.search || ''}` : '/';
 
-  if (isLoggedIn()) return <Navigate to="/" replace />;
+  if (isLoggedIn()) return <Navigate to={returnPath} replace state={from?.state} />;
 
   const login = async (credentials) => {
     setError('');
@@ -24,7 +27,7 @@ function LoginPage() {
     try {
       const response = await axiosInstance.post('/api/v1/members/login', credentials);
       localStorage.setItem('accessToken', response.data.accessToken);
-      navigate('/', { replace: true });
+      navigate(returnPath, { replace: true, state: from?.state });
     } catch (err) {
       const message = err.response?.data?.message || '로그인에 실패했습니다.';
       setError(message);
@@ -44,6 +47,7 @@ function LoginPage() {
       <h1 className="visually-hidden">로그인</h1>
 
       {location.state?.signedUp && <p>회원가입이 완료되었습니다. 로그인해 주세요.</p>}
+      {from && <p>로그인 후 이용 가능합니다.</p>}
 
       <div>
         <label htmlFor="loginId" className="visually-hidden">아이디</label>

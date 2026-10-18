@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { isLoggedIn } from '../api/auth';
+import LoginRequiredModal from '../components/LoginRequiredModal';
 
 function SeatSelectionPage() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [seats, setSeats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedSeatId, setSelectedSeatId] = useState(null);
+  // 로그인하고 돌아온 경우 로그인 전에 골라 둔 좌석을 그대로 선택해 둠
+  const [selectedSeatId, setSelectedSeatId] = useState(location.state?.selectedSeatId ?? null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const closeLoginModal = useCallback(() => setShowLoginModal(false), []);
   const [isReserving, setIsReserving] = useState(false);
   const [reserveResult, setReserveResult] = useState(null);
   const [reserveError, setReserveError] = useState('');
@@ -32,6 +38,10 @@ function SeatSelectionPage() {
 
   const handleReserve = async () => {
     if (!selectedSeatId) return;
+    if (!isLoggedIn()) {
+      setShowLoginModal(true);
+      return;
+    }
     setIsReserving(true);
     setReserveError('');
 
@@ -41,6 +51,11 @@ function SeatSelectionPage() {
       });
       setReserveResult(response.data);
     } catch (err) {
+      // 화면을 연 사이 로그인이 만료됐으면 오류 문구 대신 로그인 안내
+      if (err.response?.status === 401) {
+        setShowLoginModal(true);
+        return;
+      }
       const message = err.response?.data?.message || '예매에 실패했습니다.';
       setReserveError(message);
     } finally {
@@ -142,6 +157,10 @@ function SeatSelectionPage() {
       <button type="button" onClick={handleReserve} disabled={!selectedSeatId || isReserving}>
         {isReserving ? '예매 중...' : '예매하기'}
       </button>
+
+      {showLoginModal && (
+        <LoginRequiredModal onClose={closeLoginModal} returnState={{ selectedSeatId }} />
+      )}
     </div>
   );
 }
