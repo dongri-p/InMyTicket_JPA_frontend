@@ -998,3 +998,18 @@ input {
   background: var(--surface);
   color: var(--accent-text);
 }
+
+.payment-guide {
+  margin: 8px 0 12px;
+  padding-left: 20px;
+  list-style: disc;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.payment-guide li {
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  background: none;
+}

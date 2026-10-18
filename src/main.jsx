@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
 import SeatSelectionPage from './pages/SeatSelectionPage.jsx'
 import PaymentResultPage from './pages/PaymentResultPage.jsx'
+import PaymentFailPage from './pages/PaymentFailPage.jsx'
 import PerformanceListPage from './pages/PerformanceListPage.jsx'
 import PerformanceDetailPage from './pages/PerformanceDetailPage.jsx'
 import MyReservationsPage from './pages/MyReservationsPage.jsx'
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/performances/:performanceId" element={<PerformanceDetailPage />} />
           <Route path="/seats/:scheduleId" element={<SeatSelectionPage />} />
           <Route path="/payment/result" element={<RequireAuth><PaymentResultPage /></RequireAuth>} />
+          <Route path="/payment/fail" element={<RequireAuth><PaymentFailPage /></RequireAuth>} />
           <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         </Route>
       </Routes>

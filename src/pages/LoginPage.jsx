@@ -83,7 +83,7 @@ function LoginPage() {
       <button type="button" className="auth-secondary" onClick={() => login(DEMO_ACCOUNT)} disabled={isLoading}>
         체험 계정으로 둘러보기
       </button>
-      <p className="auth-note">가입 없이 바로 예매·결제를 체험할 수 있습니다. (결제는 실제 청구되지 않는 가상 결제입니다)</p>
+      <p className="auth-note">가입 없이 바로 예매·결제를 체험할 수 있습니다. (데모 결제·토스 테스트 결제 모두 실제로 청구되지 않습니다)</p>
 
       <p className="auth-links">
         계정이 없나요? <Link to="/signup">회원가입</Link>
