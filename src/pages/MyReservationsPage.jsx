@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { isUserCancel, requestTossPayment } from '../api/tossPayments';
+import TossPaymentWidget from '../components/TossPaymentWidget';
 
 const STATUS_LABEL = {
   PENDING: '결제 대기',
@@ -17,7 +17,8 @@ function MyReservationsPage() {
   const [error, setError] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
   const [actionMessage, setActionMessage] = useState('');
-  const [payingId, setPayingId] = useState(null);
+  // 토스 결제위젯을 펼친 예약 (한 번에 하나만)
+  const [tossPayingId, setTossPayingId] = useState(null);
 
   useEffect(() => {
     axiosInstance
@@ -56,23 +57,6 @@ function MyReservationsPage() {
     navigate('/payment/result', { state: { demo: { reservationId: r.reservationId, amount: r.totalPrice } } });
   };
 
-  // 토스 결제창 → 결제 결과 화면
-  const handleTossPay = async (r) => {
-    setPayingId(r.reservationId);
-    setActionMessage('');
-    try {
-      await requestTossPayment({
-        reservationId: r.reservationId,
-        amount: r.totalPrice,
-        orderName: `${r.performanceTitle}`.slice(0, 100),
-      });
-    } catch (err) {
-      setActionMessage(isUserCancel(err) ? '결제를 취소했습니다.' : err?.message || '결제창을 열지 못했습니다.');
-    } finally {
-      setPayingId(null);
-    }
-  };
-
   const canPay = (r) => r.status === 'PENDING' && new Date(r.scheduleStartTime) > new Date();
 
   const canCancel = (r) =>
@@ -104,26 +88,34 @@ function MyReservationsPage() {
                 <button
                   type="button"
                   onClick={() => handleDemoPay(r)}
-                  disabled={payingId === r.reservationId || cancellingId === r.reservationId}
+                  disabled={cancellingId === r.reservationId}
                 >
                   데모 결제
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleTossPay(r)}
-                  disabled={payingId === r.reservationId || cancellingId === r.reservationId}
+                  onClick={() => setTossPayingId(r.reservationId)}
+                  disabled={tossPayingId === r.reservationId || cancellingId === r.reservationId}
                 >
-                  {payingId === r.reservationId ? '결제창 여는 중...' : '토스 테스트 결제'}
+                  토스 테스트 결제
                 </button>
               </>
             )}
             {canCancel(r) && (
               <button
                 onClick={() => handleCancel(r.reservationId)}
-                disabled={cancellingId === r.reservationId || payingId === r.reservationId}
+                disabled={cancellingId === r.reservationId}
               >
                 {cancellingId === r.reservationId ? '취소 처리 중...' : '예매 취소'}
               </button>
+            )}
+            {canPay(r) && tossPayingId === r.reservationId && (
+              <TossPaymentWidget
+                reservationId={r.reservationId}
+                amount={r.totalPrice}
+                orderName={`${r.performanceTitle}`.slice(0, 100)}
+                onClose={() => setTossPayingId(null)}
+              />
             )}
           </li>
         ))}

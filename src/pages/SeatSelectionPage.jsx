@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { isLoggedIn } from '../api/auth';
-import { isUserCancel, requestTossPayment } from '../api/tossPayments';
 import LoginRequiredModal from '../components/LoginRequiredModal';
+import TossPaymentWidget from '../components/TossPaymentWidget';
 
 // 한 번에 예매할 수 있는 최대 좌석 수 (백엔드 CreateReservationRequest의 @Size(max = 4)와 맞춤)
 const MAX_SEATS = 4;
@@ -25,8 +25,7 @@ function SeatSelectionPage() {
   const [isCanceling, setIsCanceling] = useState(false);
   const [cancelMessage, setCancelMessage] = useState('');
   const [cancelError, setCancelError] = useState('');
-  const [isOpeningPayment, setIsOpeningPayment] = useState(false);
-  const [payMessage, setPayMessage] = useState('');
+  const [showTossWidget, setShowTossWidget] = useState(false);
 
   useEffect(() => {
     axiosInstance
@@ -101,26 +100,9 @@ function SeatSelectionPage() {
     navigate('/payment/result', { state: { demo: { reservationId: reserveResult.id, amount: totalPrice } } });
   };
 
-  // 토스 결제창을 띄움. 결제가 끝나면 토스가 결제 결과 화면(/payment/result)으로 이동시킴
-  const handleTossPay = async () => {
-    setIsOpeningPayment(true);
-    setPayMessage('');
-    try {
-      await requestTossPayment({
-        reservationId: reserveResult.id,
-        amount: totalPrice,
-        orderName: selectedSeats.length === 1
-          ? `좌석 ${selectedSeats[0].seatNumber}번 (${selectedSeats[0].grade})`
-          : `좌석 ${selectedSeats[0].seatNumber}번 외 ${selectedSeats.length - 1}석`,
-      });
-    } catch (err) {
-      setPayMessage(isUserCancel(err)
-        ? '결제를 취소했습니다. 다시 결제하거나 예매를 취소할 수 있습니다.'
-        : err?.message || '결제창을 열지 못했습니다.');
-    } finally {
-      setIsOpeningPayment(false);
-    }
-  };
+  const orderName = selectedSeats.length === 1
+    ? `좌석 ${selectedSeats[0].seatNumber}번 (${selectedSeats[0].grade})`
+    : `좌석 ${selectedSeats[0]?.seatNumber}번 외 ${selectedSeats.length - 1}석`;
 
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
@@ -142,25 +124,33 @@ function SeatSelectionPage() {
         <p>예약 번호: {reserveResult.id}</p>
 
         {cancelError && <p role="alert">{cancelError}</p>}
-        {payMessage && <p role="alert">{payMessage}</p>}
 
         <ul className="payment-guide">
           <li><strong>데모 결제</strong>: 인증 없이 바로 결제가 완료됩니다.</li>
           <li>
-            <strong>토스 테스트 결제</strong>: 토스페이먼츠 테스트 결제창이 열립니다. 본인 카드사 앱 인증이 필요하지만
-            실제로 청구되지는 않습니다. (테스트 환경이라 카카오페이는 지원되지 않습니다)
+            <strong>토스 테스트 결제</strong>: 토스페이먼츠 테스트 결제위젯이 열립니다. 퀵계좌이체를 고르면 테스트 비밀번호
+            000000으로 끝까지 결제해 볼 수 있고, 실제로 청구되지는 않습니다.
           </li>
         </ul>
 
-        <button type="button" onClick={handleDemoPay} disabled={isOpeningPayment || isCanceling}>
+        <button type="button" onClick={handleDemoPay} disabled={isCanceling}>
           데모 결제
         </button>
-        <button type="button" onClick={handleTossPay} disabled={isOpeningPayment || isCanceling}>
-          {isOpeningPayment ? '결제창 여는 중...' : '토스 테스트 결제'}
+        <button type="button" onClick={() => setShowTossWidget(true)} disabled={isCanceling || showTossWidget}>
+          토스 테스트 결제
         </button>
-        <button type="button" onClick={handleCancel} disabled={isCanceling || isOpeningPayment}>
+        <button type="button" onClick={handleCancel} disabled={isCanceling}>
           {isCanceling ? '취소 중...' : '예매 취소'}
         </button>
+
+        {showTossWidget && (
+          <TossPaymentWidget
+            reservationId={reserveResult.id}
+            amount={totalPrice}
+            orderName={orderName}
+            onClose={() => setShowTossWidget(false)}
+          />
+        )}
       </div>
     );
   }
