@@ -5,6 +5,9 @@ import { isLoggedIn } from '../api/auth';
 import { isUserCancel, requestTossPayment } from '../api/tossPayments';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 
+// 한 번에 예매할 수 있는 최대 좌석 수 (백엔드 CreateReservationRequest의 @Size(max = 4)와 맞춤)
+const MAX_SEATS = 4;
+
 function SeatSelectionPage() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
@@ -12,8 +15,8 @@ function SeatSelectionPage() {
   const [seats, setSeats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  // 로그인하고 돌아온 경우 로그인 전에 골라 둔 좌석을 그대로 선택해 둠
-  const [selectedSeatId, setSelectedSeatId] = useState(location.state?.selectedSeatId ?? null);
+  // 로그인하고 돌아온 경우 로그인 전에 골라 둔 좌석들을 그대로 선택해 둠
+  const [selectedSeatIds, setSelectedSeatIds] = useState(location.state?.selectedSeatIds ?? []);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const closeLoginModal = useCallback(() => setShowLoginModal(false), []);
   const [isReserving, setIsReserving] = useState(false);
@@ -40,7 +43,7 @@ function SeatSelectionPage() {
   }, [scheduleId]);
 
   const handleReserve = async () => {
-    if (!selectedSeatId) return;
+    if (selectedSeatIds.length === 0) return;
     if (!isLoggedIn()) {
       setShowLoginModal(true);
       return;
@@ -50,7 +53,7 @@ function SeatSelectionPage() {
 
     try {
       const response = await axiosInstance.post('/api/v1/reservations', {
-        seatId: selectedSeatId,
+        seatIds: selectedSeatIds,
       });
       setReserveResult(response.data);
     } catch (err) {
@@ -81,11 +84,21 @@ function SeatSelectionPage() {
     }
   };
 
-  const selectedSeat = seats.find((seat) => seat.seatId === selectedSeatId);
+  // 누르면 선택/해제, 최대 좌석 수를 넘으면 무시
+  const toggleSeat = (seatId) => {
+    setSelectedSeatIds((prev) => {
+      if (prev.includes(seatId)) return prev.filter((id) => id !== seatId);
+      if (prev.length >= MAX_SEATS) return prev;
+      return [...prev, seatId];
+    });
+  };
+
+  const selectedSeats = seats.filter((seat) => selectedSeatIds.includes(seat.seatId));
+  const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
 
   // 데모 결제: 결제창 없이 결제 결과 화면에서 바로 승인 요청
   const handleDemoPay = () => {
-    navigate('/payment/result', { state: { demo: { reservationId: reserveResult.id, amount: selectedSeat.price } } });
+    navigate('/payment/result', { state: { demo: { reservationId: reserveResult.id, amount: totalPrice } } });
   };
 
   // 토스 결제창을 띄움. 결제가 끝나면 토스가 결제 결과 화면(/payment/result)으로 이동시킴
@@ -95,8 +108,10 @@ function SeatSelectionPage() {
     try {
       await requestTossPayment({
         reservationId: reserveResult.id,
-        amount: selectedSeat.price,
-        orderName: `좌석 ${selectedSeat.seatNumber}번 (${selectedSeat.grade})`,
+        amount: totalPrice,
+        orderName: selectedSeats.length === 1
+          ? `좌석 ${selectedSeats[0].seatNumber}번 (${selectedSeats[0].grade})`
+          : `좌석 ${selectedSeats[0].seatNumber}번 외 ${selectedSeats.length - 1}석`,
       });
     } catch (err) {
       setPayMessage(isUserCancel(err)
@@ -166,34 +181,35 @@ function SeatSelectionPage() {
           <button
             key={seat.seatId}
             type="button"
-            className={`seat${selectedSeatId === seat.seatId ? ' selected' : ''}`}
+            className={`seat${selectedSeatIds.includes(seat.seatId) ? ' selected' : ''}`}
             disabled={seat.status !== 'AVAILABLE'}
-            aria-pressed={selectedSeatId === seat.seatId}
+            aria-pressed={selectedSeatIds.includes(seat.seatId)}
             title={`${seat.seatNumber}번 (${seat.grade}) ${seat.price.toLocaleString()}원`}
-            onClick={() => setSelectedSeatId(seat.seatId)}
+            onClick={() => toggleSeat(seat.seatId)}
           >
             {seat.seatNumber}
           </button>
         ))}
       </div>
 
-      {selectedSeat ? (
+      {selectedSeats.length > 0 ? (
         <p>
-          선택한 좌석: <strong>{selectedSeat.seatNumber}번 ({selectedSeat.grade})</strong> ·{' '}
-          {selectedSeat.price.toLocaleString()}원
+          선택한 좌석 ({selectedSeats.length}/{MAX_SEATS}):{' '}
+          <strong>{selectedSeats.map((seat) => `${seat.seatNumber}번 (${seat.grade})`).join(', ')}</strong> ·{' '}
+          {totalPrice.toLocaleString()}원
         </p>
       ) : (
-        <p>좌석을 선택해주세요.</p>
+        <p>좌석을 선택해주세요. (최대 {MAX_SEATS}석)</p>
       )}
 
       {reserveError && <p role="alert">{reserveError}</p>}
 
-      <button type="button" onClick={handleReserve} disabled={!selectedSeatId || isReserving}>
+      <button type="button" onClick={handleReserve} disabled={selectedSeatIds.length === 0 || isReserving}>
         {isReserving ? '예매 중...' : '예매하기'}
       </button>
 
       {showLoginModal && (
-        <LoginRequiredModal onClose={closeLoginModal} returnState={{ selectedSeatId }} />
+        <LoginRequiredModal onClose={closeLoginModal} returnState={{ selectedSeatIds }} />
       )}
     </div>
   );
