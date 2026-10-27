@@ -40,11 +40,12 @@ function MyReservationsPage() {
     setCancellingId(reservationId);
     setActionMessage('');
     try {
-      const response = await axiosInstance.delete(`/api/v1/reservations/${reservationId}`);
+      // 성공은 204(본문 없음)라 안내 문구는 화면에서 정함
+      await axiosInstance.post(`/api/v1/reservations/${reservationId}/cancel`);
       setReservations((prev) =>
         prev.map((r) => (r.reservationId === reservationId ? { ...r, status: 'CANCELLED' } : r))
       );
-      setActionMessage(response.data.message);
+      setActionMessage('예매가 취소되었습니다.');
     } catch (err) {
       setActionMessage(err.response?.data?.message || '예매 취소에 실패했습니다.');
     } finally {

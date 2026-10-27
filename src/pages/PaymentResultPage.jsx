@@ -88,7 +88,7 @@ function PaymentResultPage() {
   return (
     <div>
       <h1>결제 완료</h1>
-      <p>{result.message}</p>
+      <p>결제가 승인 완료되었습니다. 티켓 예매가 확정되었습니다.</p>
       <p>결제 번호: {result.id}</p>
 
       {/* 결제가 끝나면 다음에 할 일(예매 확인, 다른 공연 보기)로 바로 갈 수 있게 */}

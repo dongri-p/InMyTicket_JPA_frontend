@@ -73,8 +73,8 @@ function SeatSelectionPage() {
     setCancelError('');
 
     try {
-      const response = await axiosInstance.delete(`/api/v1/reservations/${reserveResult.id}`);
-      setCancelMessage(response.data.message);
+      await axiosInstance.post(`/api/v1/reservations/${reserveResult.id}/cancel`);
+      setCancelMessage('예매가 취소되었습니다.');
     } catch (err) {
       const message = err.response?.data?.message || '예매 취소에 실패했습니다.';
       setCancelError(message);
@@ -120,7 +120,7 @@ function SeatSelectionPage() {
     return (
       <div>
         <h1>예매 완료</h1>
-        <p>{reserveResult.message}</p>
+        <p>티켓 예매가 완료되었습니다. 결제를 진행해주세요.</p>
         <p>예약 번호: {reserveResult.id}</p>
 
         {cancelError && <p role="alert">{cancelError}</p>}
