@@ -61,6 +61,20 @@ function SeatSelectionPage() {
         setShowLoginModal(true);
         return;
       }
+      // 고르는 사이 다른 사람이 먼저 예매한 좌석이 있으면, 문구만 띄우지 않고 좌석 현황을 새로 받아 그 좌석을 선택에서 뺌
+      // (서버 문구가 바뀌어도 동작하도록 message가 아니라 code로 판단)
+      if (err.response?.data?.code === 'SEAT_ALREADY_RESERVED') {
+        try {
+          const latest = await axiosInstance.get(`/api/v1/schedules/${scheduleId}/seats`, { params: { page: 0, size: 100 } });
+          const available = new Set(latest.data.data.filter((s) => s.status === 'AVAILABLE').map((s) => s.seatId));
+          setSeats(latest.data.data);
+          setSelectedSeatIds((prev) => prev.filter((id) => available.has(id)));
+          setReserveError('선택한 좌석 중 다른 분이 먼저 예매한 좌석이 있어 좌석 현황을 새로 불러왔어요. 다시 골라주세요.');
+        } catch {
+          setReserveError(err.response.data.message);
+        }
+        return;
+      }
       const message = err.response?.data?.message || '예매에 실패했습니다.';
       setReserveError(message);
     } finally {
