@@ -47,16 +47,17 @@ function PerformanceListPage() {
   const status = knownKey(STATUS_FILTERS, searchParams.get('status') || '');
   const region = knownKey(REGION_FILTERS, searchParams.get('region') || '');
   const [performances, setPerformances] = useState([]);
-  const [page, setPage] = useState(0);
+  // 다음 페이지를 받을 커서 (서버가 준 nextCursor 그대로, 없으면 마지막 페이지)
+  const [nextCursor, setNextCursor] = useState(null);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchPage = (pageToLoad) =>
+  const fetchPage = (cursor) =>
     axiosInstance.get('/api/v1/performances', {
       params: {
-        page: pageToLoad,
+        cursor: cursor || undefined,
         size: PAGE_SIZE,
         genre: genre || undefined,
         keyword: keyword || undefined,
@@ -72,12 +73,13 @@ function PerformanceListPage() {
     setIsLoading(true);
     setError('');
 
-    fetchPage(0)
+    fetchPage(null)
       .then((response) => {
         if (ignore) return;
         setPerformances(response.data.data);
+        // 전체 건수는 첫 응답에만 옴
         setTotalCount(response.data.totalCount);
-        setPage(0);
+        setNextCursor(response.data.nextCursor ?? null);
       })
       .catch(() => {
         if (!ignore) setError('공연 목록을 불러오지 못했습니다.');
@@ -134,10 +136,10 @@ function PerformanceListPage() {
 
   const loadMore = () => {
     setIsLoadingMore(true);
-    fetchPage(page + 1)
+    fetchPage(nextCursor)
       .then((response) => {
         setPerformances((prev) => [...prev, ...response.data.data]);
-        setPage(page + 1);
+        setNextCursor(response.data.nextCursor ?? null);
       })
       .catch(() => {
         setError('공연 목록을 더 불러오지 못했습니다.');
@@ -193,7 +195,7 @@ function PerformanceListPage() {
         ))}
       </ul>
       {error && <p role="alert">{error}</p>}
-      {performances.length < totalCount && (
+      {nextCursor && (
         <button type="button" className="load-more" onClick={loadMore} disabled={isLoadingMore}>
           {isLoadingMore ? '불러오는 중...' : `더 보기 (${performances.length}/${totalCount})`}
         </button>
