@@ -1,18 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { BOOKING_STATUSES, bookingStatusLabel } from '../constants/bookingStatus';
 import { genreLabel } from '../constants/genres';
-import { formatPeriod, isEnded, todayString } from '../utils/date';
+import { formatPeriod } from '../utils/date';
 
 const PAGE_SIZE = 20;
 
-// 예매 상태 필터 (?status=). key는 백엔드 BookingStatus 값과 같아야 함, ''는 전체
-const STATUS_FILTERS = [
-  { key: '', label: '전체' },
-  { key: 'ON_SALE', label: '예매중' },
-  { key: 'UPCOMING', label: '오픈예정' },
-  { key: 'ENDED', label: '공연종료' },
-];
+// 예매 상태 필터 (?status=). ''는 전체
+const STATUS_FILTERS = [{ key: '', label: '전체' }, ...BOOKING_STATUSES];
 
 // 지역 필터 (?region=). key는 백엔드 RegionGroup 값과 같아야 함, ''는 전체
 const REGION_FILTERS = [
@@ -29,15 +25,18 @@ function knownKey(filters, value) {
   return filters.some((f) => f.key === value) ? value : '';
 }
 
-// 포스터 배지: 시작 전 회차가 있으면 예매중, 종료일이 지났으면 공연종료, 나머지(기간 모름 포함)는 오픈예정
-function bookingBadge(performance, today) {
-  if (performance.upcomingScheduleCount > 0) {
-    return <span className="booking-badge booking-badge-open">예매중</span>;
-  }
-  if (isEnded(performance, today)) {
-    return <span className="booking-badge booking-badge-ended">공연종료</span>;
-  }
-  return <span className="booking-badge">오픈예정</span>;
+// 포스터 배지: 판정은 서버(bookingStatus)가 하고 여기선 모양만 고름 (필터·정렬과 같은 기준)
+const BADGE_CLASS = {
+  ON_SALE: 'booking-badge booking-badge-open',
+  ENDED: 'booking-badge booking-badge-ended',
+};
+
+function bookingBadge(performance) {
+  return (
+    <span className={BADGE_CLASS[performance.bookingStatus] ?? 'booking-badge'}>
+      {bookingStatusLabel(performance.bookingStatus)}
+    </span>
+  );
 }
 
 function PerformanceListPage() {
@@ -153,7 +152,6 @@ function PerformanceListPage() {
 
   const genreTitle = genre ? genreLabel(genre) ?? '공연 목록' : '전체 공연';
   const title = keyword ? `'${keyword}' 검색 결과` : genreTitle;
-  const today = todayString();
   const emptyMessage = status || region
     ? '조건에 맞는 공연이 없어요.'
     : keyword
@@ -181,7 +179,7 @@ function PerformanceListPage() {
                 ) : (
                   <div className="poster-image poster-empty">포스터 준비 중</div>
                 )}
-                {bookingBadge(p, today)}
+                {bookingBadge(p)}
               </div>
               <strong className="poster-title">{p.title}</strong>
             </Link>

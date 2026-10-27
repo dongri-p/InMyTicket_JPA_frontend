@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { formatPeriod, isEnded } from '../utils/date';
+import { bookingStatusLabel } from '../constants/bookingStatus';
+import { formatPeriod } from '../utils/date';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -45,7 +46,7 @@ function PerformanceDetailPage() {
   if (error) return <p role="alert">{error}</p>;
 
   const period = formatPeriod(performance.startDate, performance.endDate);
-  const ended = isEnded(performance);
+  const ended = performance.bookingStatus === 'ENDED';
   const now = new Date();
   // 서버는 시작 시각 순으로 주므로, 예매할 수 있는 회차가 먼저 보이게 이미 시작한(마감) 회차만 뒤로 보냄 (각각의 날짜순은 유지)
   const isStarted = (s) => new Date(s.startTime) <= now;
@@ -66,7 +67,7 @@ function PerformanceDetailPage() {
       <div className="detail-body">
         <p className="detail-tags">
           <span className="detail-category">{performance.category}</span>
-          <span className="poster-status">{performance.status}</span>
+          <span className="poster-status">{bookingStatusLabel(performance.bookingStatus)}</span>
         </p>
         <h1 className="detail-title">{performance.title}</h1>
 
