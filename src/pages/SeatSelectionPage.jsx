@@ -8,6 +8,21 @@ import TossPaymentWidget from '../components/TossPaymentWidget';
 // 한 번에 예매할 수 있는 최대 좌석 수 (백엔드 CreateReservationRequest의 @Size(max = 4)와 맞춤)
 const MAX_SEATS = 4;
 
+// 좌석 API는 한 번에 최대 100개까지만 주므로(공개 API 대량조회 방지), 전체 좌석을 다 받을 때까지 페이지를 넘겨 받음
+const SEAT_PAGE_SIZE = 100;
+
+async function fetchAllSeats(scheduleId) {
+  const all = [];
+  for (let page = 0; ; page++) {
+    const { data } = await axiosInstance.get(`/api/v1/schedules/${scheduleId}/seats`, {
+      params: { page, size: SEAT_PAGE_SIZE },
+    });
+    all.push(...data.data);
+    // 받는 사이 좌석 수가 바뀌어도 끝없이 돌지 않도록 마지막 페이지(덜 찬 페이지)에서도 멈춤
+    if (data.count < SEAT_PAGE_SIZE || all.length >= data.totalCount) return all;
+  }
+}
+
 function SeatSelectionPage() {
   const { scheduleId } = useParams();
   const navigate = useNavigate();
@@ -28,11 +43,8 @@ function SeatSelectionPage() {
   const [showTossWidget, setShowTossWidget] = useState(false);
 
   useEffect(() => {
-    axiosInstance
-      .get(`/api/v1/schedules/${scheduleId}/seats`, { params: { page: 0, size: 100 } })
-      .then((response) => {
-        setSeats(response.data.data);
-      })
+    fetchAllSeats(scheduleId)
+      .then(setSeats)
       .catch(() => {
         setError('좌석 목록을 불러오지 못했습니다.');
       })
@@ -65,9 +77,9 @@ function SeatSelectionPage() {
       // (서버 문구가 바뀌어도 동작하도록 message가 아니라 code로 판단)
       if (err.response?.data?.code === 'SEAT_ALREADY_RESERVED') {
         try {
-          const latest = await axiosInstance.get(`/api/v1/schedules/${scheduleId}/seats`, { params: { page: 0, size: 100 } });
-          const available = new Set(latest.data.data.filter((s) => s.status === 'AVAILABLE').map((s) => s.seatId));
-          setSeats(latest.data.data);
+          const latest = await fetchAllSeats(scheduleId);
+          const available = new Set(latest.filter((s) => s.status === 'AVAILABLE').map((s) => s.seatId));
+          setSeats(latest);
           setSelectedSeatIds((prev) => prev.filter((id) => available.has(id)));
           setReserveError('선택한 좌석 중 다른 분이 먼저 예매한 좌석이 있어 좌석 현황을 새로 불러왔어요. 다시 골라주세요.');
         } catch {
