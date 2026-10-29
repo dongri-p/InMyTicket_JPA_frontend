@@ -1118,9 +1118,58 @@ input {
   min-width: 100px;
 }
 
-.modal-actions .button-secondary {
+.modal-actions .button-secondary,
+.refund-actions .button-secondary {
   background: var(--surface);
   color: var(--accent-text);
+}
+
+/* 내 예매: 취소 수수료 안내와 취소 전 환불 미리 보기 */
+.cancel-policy {
+  margin: 8px 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.refund-preview {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-bg);
+}
+
+.refund-preview dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.refund-preview dt {
+  color: var(--text-muted);
+}
+
+.refund-preview dd {
+  margin: 0;
+  text-align: right;
+  color: var(--text-h);
+}
+
+.refund-reason {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.refund-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.refund-actions button {
+  margin: 0;
 }
 
 .payment-guide {
