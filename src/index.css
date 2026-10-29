@@ -1124,6 +1124,51 @@ input {
   color: var(--accent-text);
 }
 
+/* 예매 오픈 카운트다운·대기열 */
+.queue-box {
+  max-width: 480px;
+  margin: 24px auto;
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.queue-box h1 {
+  margin-top: 0;
+}
+
+.queue-big {
+  margin: 8px 0;
+  font-size: 40px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+}
+
+.queue-open-at {
+  color: var(--text-h);
+}
+
+.queue-hint {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.queue-banner {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 14px;
+}
+
+.schedule-opens {
+  color: var(--accent-text);
+}
+
 /* 내 예매: 취소 수수료 안내와 취소 전 환불 미리 보기 */
 .cancel-policy {
   margin: 8px 0 16px;

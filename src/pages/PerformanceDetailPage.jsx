@@ -127,12 +127,15 @@ function PerformanceDetailPage() {
                 // 이미 시작한 회차는 서버가 예약을 거절하므로, 좌석 선택까지 들어가지 않도록 여기서 막음
                 const started = isStarted(s);
                 const soldOut = s.availableSeatCount === 0;
+                // 예매 오픈 전 회차는 오픈 시각을 함께 보여줌 (들어가면 카운트다운 화면)
+                const opensAt = s.bookingOpenAt && new Date(s.bookingOpenAt) > new Date() ? formatSchedule(s.bookingOpenAt) : null;
                 return (
                   <li key={s.scheduleId} className="schedule-item">
                     <div>
                       <strong>{date}</strong> <span className="schedule-time">{time}</span>
                       <p className="schedule-seats">
                         잔여 {s.availableSeatCount}/{s.totalSeatCount}석
+                        {opensAt && <span className="schedule-opens"> · {opensAt.date} {opensAt.time} 오픈</span>}
                       </p>
                     </div>
                     {started ? (

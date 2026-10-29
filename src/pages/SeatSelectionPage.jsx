@@ -4,6 +4,8 @@ import axiosInstance from '../api/axiosInstance';
 import { isLoggedIn } from '../api/auth';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import TossPaymentWidget from '../components/TossPaymentWidget';
+import { AdmissionBanner, OpenCountdown, QueueWaiting } from '../components/BookingGate';
+import { useBookingGate } from '../hooks/useBookingGate';
 
 // 한 번에 예매할 수 있는 최대 좌석 수 (백엔드 CreateReservationRequest의 @Size(max = 4)와 맞춤)
 const MAX_SEATS = 4;
@@ -56,6 +58,8 @@ function SeatSelectionPage() {
   const [cancelMessage, setCancelMessage] = useState('');
   const [cancelError, setCancelError] = useState('');
   const [showTossWidget, setShowTossWidget] = useState(false);
+  // 예매 오픈 전이면 카운트다운, 오픈 직후 대기열 운영 중이면 차례가 될 때까지 대기 화면
+  const gate = useBookingGate(scheduleId);
 
   useEffect(() => {
     fetchAllSeats(scheduleId)
@@ -86,6 +90,12 @@ function SeatSelectionPage() {
       // 화면을 연 사이 로그인이 만료됐으면 오류 문구 대신 로그인 안내
       if (err.response?.status === 401) {
         setShowLoginModal(true);
+        return;
+      }
+      // 입장 시간이 지났거나 아직 줄을 안 섰으면(로그인 전에 좌석을 골라 둔 경우) 다시 줄을 세움
+      if (err.response?.data?.code === 'QUEUE_ENTRY_REQUIRED') {
+        setReserveError(err.response.data.message);
+        gate.refresh();
         return;
       }
       // 고르는 사이 다른 사람이 먼저 예매한 좌석이 있으면, 문구만 띄우지 않고 좌석 현황을 새로 받아 그 좌석을 선택에서 뺌
@@ -145,8 +155,15 @@ function SeatSelectionPage() {
     ? `좌석 ${selectedSeats[0].seatNumber}번 (${selectedSeats[0].grade})`
     : `좌석 ${selectedSeats[0]?.seatNumber}번 외 ${selectedSeats.length - 1}석`;
 
-  if (isLoading) return <p>로딩 중...</p>;
+  if (isLoading || gate.state === 'LOADING') return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
+  // 예매를 마친 뒤에는 대기열 상태와 관계없이 결제 화면을 보여줌
+  if (!reserveResult && gate.state === 'NOT_OPEN') {
+    return <OpenCountdown bookingOpenAt={gate.bookingOpenAt} onOpen={gate.refresh} />;
+  }
+  if (!reserveResult && gate.state === 'WAITING') {
+    return <QueueWaiting position={gate.position} estimatedWaitSeconds={gate.estimatedWaitSeconds} />;
+  }
 
   if (reserveResult) {
     if (cancelMessage) {
@@ -199,6 +216,7 @@ function SeatSelectionPage() {
   return (
     <div>
       <h1>좌석 선택</h1>
+      {gate.state === 'ADMITTED' && <AdmissionBanner admissionExpiresInSeconds={gate.admissionExpiresInSeconds} />}
 
       <ul className="grade-legend" aria-label="좌석 등급과 가격">
         {gradeLegend(seats).map(({ grade, price }) => (

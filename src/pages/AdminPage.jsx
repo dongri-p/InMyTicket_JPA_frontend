@@ -63,6 +63,8 @@ function ScheduleForm({ halls }) {
   const [performance, setPerformance] = useState(null);
   const [hallId, setHallId] = useState('');
   const [startTime, setStartTime] = useState('');
+  // 예매 오픈 시각 (비우면 등록하자마자 예매 가능)
+  const [bookingOpenAt, setBookingOpenAt] = useState('');
   const [seatCount, setSeatCount] = useState('');
   const [gradeRows, setGradeRows] = useState(defaultGradeRows(0));
   const [error, setError] = useState('');
@@ -131,6 +133,7 @@ function ScheduleForm({ halls }) {
         hallId: Number(hallId),
         startTime: toServerDateTime(startTime),
         totalSeatCount: Number(seatCount),
+        bookingOpenAt: bookingOpenAt ? toServerDateTime(bookingOpenAt) : undefined,
         // 0석인 등급은 빼고 보냄 (서버는 구역마다 1석 이상만 받음)
         grades: gradeRows
           .filter((row) => Number(row.seatCount) > 0)
@@ -138,6 +141,7 @@ function ScheduleForm({ halls }) {
       });
       setCreated({ performance, startTime: toServerDateTime(startTime).slice(0, 16) });
       setStartTime('');
+      setBookingOpenAt('');
     } catch (err) {
       setError(errorMessage(err, '회차 등록에 실패했습니다.'));
     } finally {
@@ -222,6 +226,19 @@ function ScheduleForm({ halls }) {
             onChange={(e) => setStartTime(e.target.value)}
             required
           />
+        </div>
+
+        <div>
+          <label htmlFor="bookingOpenAt">예매 오픈 시각 (선택)</label>
+          <input
+            id="bookingOpenAt"
+            type="datetime-local"
+            value={bookingOpenAt}
+            min={nowForInput()}
+            max={startTime || undefined}
+            onChange={(e) => setBookingOpenAt(e.target.value)}
+          />
+          <p className="admin-hint">비우면 등록하자마자 예매할 수 있어요. 정하면 오픈 후 30분 동안은 대기열 순서대로 입장합니다.</p>
         </div>
 
         <div>
