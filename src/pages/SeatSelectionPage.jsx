@@ -8,6 +8,21 @@ import TossPaymentWidget from '../components/TossPaymentWidget';
 // 한 번에 예매할 수 있는 최대 좌석 수 (백엔드 CreateReservationRequest의 @Size(max = 4)와 맞춤)
 const MAX_SEATS = 4;
 
+// 무대에서 가까운 순서 (백엔드 SeatGrade 선언 순서와 같음). 범례도 이 순서로 보여줌
+const GRADE_ORDER = ['VIP', 'R', 'S', 'A'];
+
+// 이 회차에 있는 등급만, 등급별 가격과 함께 (같은 등급은 한 가격이지만 혹시 다르면 최저가~최고가)
+function gradeLegend(seats) {
+  return GRADE_ORDER.map((grade) => {
+    const prices = seats.filter((seat) => seat.grade === grade).map((seat) => seat.price);
+    if (prices.length === 0) return null;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const price = min === max ? `${min.toLocaleString()}원` : `${min.toLocaleString()}~${max.toLocaleString()}원`;
+    return { grade, price };
+  }).filter(Boolean);
+}
+
 // 좌석 API는 한 번에 최대 100개까지만 주므로(공개 API 대량조회 방지), 전체 좌석을 다 받을 때까지 페이지를 넘겨 받음
 const SEAT_PAGE_SIZE = 100;
 
@@ -185,8 +200,14 @@ function SeatSelectionPage() {
     <div>
       <h1>좌석 선택</h1>
 
+      <ul className="grade-legend" aria-label="좌석 등급과 가격">
+        {gradeLegend(seats).map(({ grade, price }) => (
+          <li key={grade} className={`grade-${grade.toLowerCase()}`}>
+            <strong>{grade}석</strong> {price}
+          </li>
+        ))}
+      </ul>
       <div className="seat-legend">
-        <span>선택 가능</span>
         <span className="legend-selected">선택</span>
         <span className="legend-taken">예약됨</span>
       </div>
@@ -197,10 +218,11 @@ function SeatSelectionPage() {
           <button
             key={seat.seatId}
             type="button"
-            className={`seat${selectedSeatIds.includes(seat.seatId) ? ' selected' : ''}`}
+            className={`seat grade-${seat.grade.toLowerCase()}${selectedSeatIds.includes(seat.seatId) ? ' selected' : ''}`}
             disabled={seat.status !== 'AVAILABLE'}
             aria-pressed={selectedSeatIds.includes(seat.seatId)}
-            title={`${seat.seatNumber}번 (${seat.grade}) ${seat.price.toLocaleString()}원`}
+            title={`${seat.seatNumber}번 (${seat.grade}석) ${seat.price.toLocaleString()}원`}
+            aria-label={`${seat.seatNumber}번 ${seat.grade}석 ${seat.price.toLocaleString()}원`}
             onClick={() => toggleSeat(seat.seatId)}
           >
             {seat.seatNumber}

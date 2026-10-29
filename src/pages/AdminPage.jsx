@@ -28,6 +28,35 @@ function startTimeRange(performance) {
   };
 }
 
+// 등급별 기본 배치 - 서버 기본값(GradeSection.defaults)과 같은 비율·가격: 무대 앞부터 VIP 20%, R 30%, S 30%, 나머지 A
+const DEFAULT_GRADES = [
+  { grade: 'VIP', price: 150000 },
+  { grade: 'R', price: 120000 },
+  { grade: 'S', price: 90000 },
+  { grade: 'A', price: 60000 },
+];
+
+function defaultGradeRows(seatCount) {
+  const total = Math.max(Number(seatCount) || 0, 0);
+  const vip = Math.floor((total * 2) / 10);
+  const r = Math.floor((total * 3) / 10);
+  const s = Math.floor((total * 3) / 10);
+  const counts = [vip, r, s, total - vip - r - s];
+  return DEFAULT_GRADES.map(({ grade, price }, i) => ({ grade, seatCount: String(counts[i]), price: String(price) }));
+}
+
+// 각 등급이 차지하는 좌석 번호 (앞 등급부터 이어서 1번부터 배치) - 0석이면 null
+function seatRanges(rows) {
+  let next = 1;
+  return rows.map((row) => {
+    const count = Number(row.seatCount) || 0;
+    if (count <= 0) return null;
+    const range = count === 1 ? `${next}번` : `${next}~${next + count - 1}번`;
+    next += count;
+    return range;
+  });
+}
+
 function ScheduleForm({ halls }) {
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState(null);
@@ -35,12 +64,26 @@ function ScheduleForm({ halls }) {
   const [hallId, setHallId] = useState('');
   const [startTime, setStartTime] = useState('');
   const [seatCount, setSeatCount] = useState('');
+  const [gradeRows, setGradeRows] = useState(defaultGradeRows(0));
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const hall = halls.find((h) => String(h.hallId) === hallId);
   const range = startTimeRange(performance);
+  const gradeSum = gradeRows.reduce((sum, row) => sum + (Number(row.seatCount) || 0), 0);
+  const gradeMismatch = seatCount !== '' && gradeSum !== Number(seatCount);
+  const ranges = seatRanges(gradeRows);
+
+  // 좌석 수가 바뀌면 등급 배치를 기본 비율로 다시 채움 (가격은 입력해 둔 값 유지)
+  const changeSeatCount = (value) => {
+    setSeatCount(value);
+    setGradeRows((rows) => defaultGradeRows(value).map((row, i) => ({ ...row, price: rows[i].price })));
+  };
+
+  const changeGradeRow = (index, field, value) => {
+    setGradeRows((rows) => rows.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
 
   const searchPerformances = async () => {
     setError('');
@@ -66,13 +109,17 @@ function ScheduleForm({ halls }) {
   const handleHallChange = (e) => {
     const selected = halls.find((h) => String(h.hallId) === e.target.value);
     setHallId(e.target.value);
-    setSeatCount(selected ? String(selected.totalSeats) : '');
+    changeSeatCount(selected ? String(selected.totalSeats) : '');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!performance) {
       setError('공연을 먼저 선택하세요.');
+      return;
+    }
+    if (gradeMismatch) {
+      setError(`등급별 좌석 수 합(${gradeSum}석)을 좌석 수(${seatCount}석)와 맞춰 주세요.`);
       return;
     }
     setError('');
@@ -84,6 +131,10 @@ function ScheduleForm({ halls }) {
         hallId: Number(hallId),
         startTime: toServerDateTime(startTime),
         totalSeatCount: Number(seatCount),
+        // 0석인 등급은 빼고 보냄 (서버는 구역마다 1석 이상만 받음)
+        grades: gradeRows
+          .filter((row) => Number(row.seatCount) > 0)
+          .map((row) => ({ grade: row.grade, seatCount: Number(row.seatCount), price: Number(row.price) })),
       });
       setCreated({ performance, startTime: toServerDateTime(startTime).slice(0, 16) });
       setStartTime('');
@@ -181,10 +232,58 @@ function ScheduleForm({ halls }) {
             value={seatCount}
             min={1}
             max={hall?.totalSeats}
-            onChange={(e) => setSeatCount(e.target.value)}
+            onChange={(e) => changeSeatCount(e.target.value)}
             required
           />
         </div>
+
+        <fieldset className="admin-grades">
+          <legend>등급별 좌석 (무대에서 가까운 순)</legend>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">등급</th>
+                <th scope="col">좌석 수</th>
+                <th scope="col">가격(원)</th>
+                <th scope="col">좌석 번호</th>
+              </tr>
+            </thead>
+            <tbody>
+              {gradeRows.map((row, i) => (
+                <tr key={row.grade} className={`grade-${row.grade.toLowerCase()}`}>
+                  <td>{row.grade}석</td>
+                  <td>
+                    <input
+                      type="number"
+                      aria-label={`${row.grade}석 좌석 수`}
+                      value={row.seatCount}
+                      min={0}
+                      onChange={(e) => changeGradeRow(i, 'seatCount', e.target.value)}
+                      required
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      aria-label={`${row.grade}석 가격`}
+                      value={row.price}
+                      min={0}
+                      max={10000000}
+                      step={1000}
+                      onChange={(e) => changeGradeRow(i, 'price', e.target.value)}
+                      required
+                    />
+                  </td>
+                  <td className="admin-hint">{ranges[i] ?? '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className={`admin-hint${gradeMismatch ? ' grade-mismatch' : ''}`}>
+            합계 {gradeSum}석{seatCount !== '' && ` / 좌석 수 ${seatCount}석`}
+            {gradeMismatch && ' - 합계를 좌석 수와 맞춰 주세요'}
+          </p>
+        </fieldset>
 
         {error && <p role="alert">{error}</p>}
         {created && (

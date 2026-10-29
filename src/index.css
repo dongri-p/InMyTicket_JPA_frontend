@@ -14,6 +14,11 @@
   --accent-bg: rgba(131, 189, 191, 0.15);
   --danger: #dc2626;
   --seat-taken: #d4d2d8;
+  /* 좌석 등급 색 (선택한 좌석의 민트, 예약된 좌석의 회색과 겹치지 않는 색) */
+  --grade-vip: #7c3aed;
+  --grade-r: #c2410c;
+  --grade-s: #1d4ed8;
+  --grade-a: #4d7c0f;
   --radius: 8px;
 
   --sans: system-ui, 'Segoe UI', 'Malgun Gothic', Roboto, sans-serif;
@@ -40,6 +45,10 @@
     --accent-bg: rgba(131, 189, 191, 0.18);
     --danger: #f87171;
     --seat-taken: #3a3c47;
+    --grade-vip: #c4a7fb;
+    --grade-r: #fdba74;
+    --grade-s: #93c5fd;
+    --grade-a: #bef264;
   }
 }
 
@@ -163,9 +172,48 @@ input {
   margin: 0;
   padding: 0;
   font-size: 13px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--grade, var(--accent));
+  border-width: 2px;
   background: var(--surface);
-  color: var(--accent-text);
+  color: var(--grade, var(--accent-text));
+}
+
+/* 등급마다 테두리·번호 색만 바꾸고, 선택(민트)·예약됨(회색) 표시는 등급과 관계없이 같게 */
+.grade-vip { --grade: var(--grade-vip); }
+.grade-r { --grade: var(--grade-r); }
+.grade-s { --grade: var(--grade-s); }
+.grade-a { --grade: var(--grade-a); }
+
+.grade-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.grade-legend li {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+}
+
+.grade-legend li::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 3px;
+  vertical-align: -1px;
+  border: 2px solid var(--grade);
+}
+
+.grade-legend strong {
+  color: var(--grade);
 }
 
 .seat:hover:not(:disabled) {
@@ -174,6 +222,7 @@ input {
 
 .seat.selected,
 .seat.selected:hover {
+  border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
 }
@@ -952,6 +1001,81 @@ input {
 
 .admin-success {
   color: var(--accent-text);
+}
+
+/* 회차 등록의 등급별 좌석 표 */
+.admin-grades {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.admin-grades legend {
+  padding: 0 4px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.admin-grades table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-grades th {
+  padding: 4px 6px;
+  white-space: nowrap;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-muted);
+}
+
+.admin-grades td {
+  padding: 4px 6px;
+}
+
+.admin-grades td input {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.admin-grades th:first-child {
+  width: 52px;
+}
+
+.admin-grades th:last-child {
+  width: 76px;
+}
+
+.admin-grades td:first-child {
+  font-weight: 600;
+  color: var(--grade);
+  white-space: nowrap;
+}
+
+.admin-grades .admin-hint {
+  margin: 8px 0 0;
+}
+
+.admin-grades .grade-mismatch {
+  color: var(--danger);
+}
+
+/* 좁은 화면에서는 가격 칸이 잘리지 않도록 참고용 좌석 번호 열을 숨김 */
+@media (max-width: 480px) {
+  .admin-grades th:last-child,
+  .admin-grades td:last-child {
+    display: none;
+  }
+
+  .admin-grades td input {
+    padding-left: 8px;
+    padding-right: 4px;
+  }
 }
 
 /* 로그인 안내 팝업 (비로그인 상태에서 예매를 누를 때) */
