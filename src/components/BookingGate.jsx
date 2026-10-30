@@ -39,14 +39,29 @@ export function OpenCountdown({ bookingOpenAt, onOpen }) {
   );
 }
 
-// 줄 서는 중 - 내 앞 인원과 대략적인 대기 시간
-export function QueueWaiting({ position, estimatedWaitSeconds }) {
+// 줄 서는 중 - 내 앞 인원과 대략적인 대기 시간, 지금 남은 좌석
+// 매진이어도 줄은 유지: 결제하지 않은 예약은 시간이 지나면 풀려서 좌석이 다시 생길 수 있음
+export function QueueWaiting({ position, estimatedWaitSeconds, availableSeats, onBack }) {
   return (
     <div className="queue-box" role="status">
       <h1>예매 대기 중</h1>
       <p>내 앞에</p>
       <p className="queue-big">{Math.max(position - 1, 0).toLocaleString()}명</p>
       <p>예상 대기 약 {formatRemaining(estimatedWaitSeconds * 1000, false)}</p>
+      {availableSeats > 0 && (
+        <p className="queue-seats">
+          남은 좌석 <strong>{availableSeats.toLocaleString()}석</strong>
+        </p>
+      )}
+      {availableSeats === 0 && (
+        <div className="queue-soldout">
+          <p><strong>현재 매진이에요</strong></p>
+          <p>결제되지 않은 좌석이 풀리면 다시 생길 수 있어요. 기다리시는 동안 순서는 그대로 유지돼요.</p>
+          <button type="button" className="button-secondary" onClick={onBack}>
+            이전 화면으로
+          </button>
+        </div>
+      )}
       <p className="queue-hint">새로고침하거나 다시 들어와도 순서는 그대로예요. 차례가 되면 좌석 선택 화면으로 자동으로 넘어갑니다.</p>
     </div>
   );

@@ -162,7 +162,15 @@ function SeatSelectionPage() {
     return <OpenCountdown bookingOpenAt={gate.bookingOpenAt} onOpen={gate.refresh} />;
   }
   if (!reserveResult && gate.state === 'WAITING') {
-    return <QueueWaiting position={gate.position} estimatedWaitSeconds={gate.estimatedWaitSeconds} />;
+    return (
+      <QueueWaiting
+        position={gate.position}
+        estimatedWaitSeconds={gate.estimatedWaitSeconds}
+        availableSeats={gate.availableSeats}
+        // 주소로 바로 들어와 돌아갈 화면이 없으면(location.key === 'default') 첫 화면으로
+        onBack={() => (location.key === 'default' ? navigate('/') : navigate(-1))}
+      />
+    );
   }
 
   if (reserveResult) {
