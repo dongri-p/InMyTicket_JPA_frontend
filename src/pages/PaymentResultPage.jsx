@@ -73,13 +73,16 @@ function PaymentResultPage() {
 
   if (isProcessing) return <p>결제 처리 중...</p>;
   if (error) {
-    // 승인에 실패해도 예약은 결제 대기로 남아 있어서 마이페이지에서 다시 결제할 수 있음
+    // 승인에 실패해도 예약이 살아 있으면 마이페이지에서 다시 결제할 수 있고, 만료됐으면 다른 공연이나 좌석을 고르면 됨.
     return (
       <div>
         <h1>결제 실패</h1>
         <p role="alert">{error}</p>
         <button type="button" onClick={() => navigate('/my-reservations')}>
           내 예매 보기
+        </button>
+        <button type="button" onClick={() => navigate('/')}>
+          다른 공연 보기
         </button>
       </div>
     );

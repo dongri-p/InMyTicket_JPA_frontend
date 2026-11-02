@@ -188,6 +188,7 @@ function SeatSelectionPage() {
         <h1>예매 완료</h1>
         <p>티켓 예매가 완료되었습니다. 결제를 진행해주세요.</p>
         <p>예약 번호: {reserveResult.id}</p>
+        <p className="payment-deadline">10분 안에 결제를 끝내 주세요. 시간이 지나면 예약이 자동으로 취소되고 좌석이 풀립니다.</p>
 
         {cancelError && <p role="alert">{cancelError}</p>}
 

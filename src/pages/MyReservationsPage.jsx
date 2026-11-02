@@ -208,6 +208,8 @@ function MyReservationsPage() {
         취소 수수료: 공연 7일 전까지 무료 · 6~3일 전 10% · 2일 전부터 30% · 공연 시작 후 취소 불가
         <br />
         예매 후 24시간 안에 취소하면 무료 (공연 2일 전부터 한 예매는 제외)
+        <br />
+        결제 대기 예약은 10분이 지나면 자동으로 취소됩니다
       </p>
 
       {actionMessage && <p role="status">{actionMessage}</p>}

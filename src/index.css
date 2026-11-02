@@ -1249,6 +1249,11 @@ input {
   margin: 0;
 }
 
+.payment-deadline {
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
 .payment-guide {
   margin: 8px 0 12px;
   padding-left: 20px;
