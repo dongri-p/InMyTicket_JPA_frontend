@@ -1201,6 +1201,13 @@ input {
   color: var(--text-muted);
 }
 
+.cancelled-toggle {
+  display: block;
+  margin: 16px 0;
+  background: var(--surface);
+  color: var(--accent-text);
+}
+
 .refund-preview {
   margin-top: 8px;
   padding: 12px 16px;

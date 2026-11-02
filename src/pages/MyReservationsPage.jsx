@@ -58,6 +58,8 @@ function MyReservationsPage() {
   const [actionMessage, setActionMessage] = useState('');
   // 토스 결제위젯을 펼친 예약 (한 번에 하나만)
   const [tossPayingId, setTossPayingId] = useState(null);
+  // 취소 내역은 접어 두고 누르면 펼침
+  const [showCancelled, setShowCancelled] = useState(false);
 
   useEffect(() => {
     axiosInstance
@@ -134,8 +136,69 @@ function MyReservationsPage() {
     (r.status === 'PENDING' || r.status === 'CONFIRMED') &&
     new Date(r.scheduleStartTime) > new Date();
 
+  const renderReservation = (r) => (
+    <li key={r.reservationId}>
+      <strong>{r.performanceTitle}</strong>
+      <p>공연 일시: {new Date(r.scheduleStartTime).toLocaleString()}</p>
+      <p>좌석: {r.seats.map((s) => `${s.grade} ${s.seatNumber}번`).join(', ')}</p>
+      <p>총 금액: {r.totalPrice.toLocaleString()}원</p>
+      <p>상태: {STATUS_LABEL[r.status] || r.status}</p>
+      {r.status === 'CANCELLED' && r.refundedAmount != null && (
+        <p>
+          환불: {r.refundedAmount.toLocaleString()}원
+          {r.cancelFee > 0 && ` (수수료 ${r.cancelFee.toLocaleString()}원)`}
+        </p>
+      )}
+      {canPay(r) && (
+        <>
+          <button
+            type="button"
+            onClick={() => handleDemoPay(r)}
+            disabled={cancellingId === r.reservationId}
+          >
+            데모 결제
+          </button>
+          <button
+            type="button"
+            onClick={() => setTossPayingId(r.reservationId)}
+            disabled={tossPayingId === r.reservationId || cancellingId === r.reservationId}
+          >
+            토스 테스트 결제
+          </button>
+        </>
+      )}
+      {canCancel(r) && refundPreview?.reservationId !== r.reservationId && (
+        <button
+          onClick={() => handleCancel(r.reservationId)}
+          disabled={quotingId === r.reservationId}
+        >
+          {quotingId === r.reservationId ? '환불 금액 확인 중...' : '예매 취소'}
+        </button>
+      )}
+      {canCancel(r) && refundPreview?.reservationId === r.reservationId && (
+        <RefundPreview
+          quote={refundPreview.quote}
+          isCancelling={cancellingId === r.reservationId}
+          onConfirm={confirmCancel}
+          onClose={() => setRefundPreview(null)}
+        />
+      )}
+      {canPay(r) && tossPayingId === r.reservationId && (
+        <TossPaymentWidget
+          reservationId={r.reservationId}
+          amount={r.totalPrice}
+          orderName={`${r.performanceTitle}`.slice(0, 100)}
+          onClose={() => setTossPayingId(null)}
+        />
+      )}
+    </li>
+  );
+
   if (isLoading) return <p>로딩 중...</p>;
   if (error) return <p role="alert">{error}</p>;
+
+  const activeReservations = reservations.filter((r) => r.status !== 'CANCELLED');
+  const cancelledReservations = reservations.filter((r) => r.status === 'CANCELLED');
 
   return (
     <div>
@@ -150,66 +213,21 @@ function MyReservationsPage() {
       {actionMessage && <p role="status">{actionMessage}</p>}
 
       {reservations.length === 0 && <p>예매 내역이 없습니다.</p>}
+      {reservations.length > 0 && activeReservations.length === 0 && <p>진행 중인 예매가 없습니다.</p>}
 
-      <ul>
-        {reservations.map((r) => (
-          <li key={r.reservationId}>
-            <strong>{r.performanceTitle}</strong>
-            <p>공연 일시: {new Date(r.scheduleStartTime).toLocaleString()}</p>
-            <p>좌석: {r.seats.map((s) => `${s.grade} ${s.seatNumber}번`).join(', ')}</p>
-            <p>총 금액: {r.totalPrice.toLocaleString()}원</p>
-            <p>상태: {STATUS_LABEL[r.status] || r.status}</p>
-            {r.status === 'CANCELLED' && r.refundedAmount != null && (
-              <p>
-                환불: {r.refundedAmount.toLocaleString()}원
-                {r.cancelFee > 0 && ` (수수료 ${r.cancelFee.toLocaleString()}원)`}
-              </p>
-            )}
-            {canPay(r) && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleDemoPay(r)}
-                  disabled={cancellingId === r.reservationId}
-                >
-                  데모 결제
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTossPayingId(r.reservationId)}
-                  disabled={tossPayingId === r.reservationId || cancellingId === r.reservationId}
-                >
-                  토스 테스트 결제
-                </button>
-              </>
-            )}
-            {canCancel(r) && refundPreview?.reservationId !== r.reservationId && (
-              <button
-                onClick={() => handleCancel(r.reservationId)}
-                disabled={quotingId === r.reservationId}
-              >
-                {quotingId === r.reservationId ? '환불 금액 확인 중...' : '예매 취소'}
-              </button>
-            )}
-            {canCancel(r) && refundPreview?.reservationId === r.reservationId && (
-              <RefundPreview
-                quote={refundPreview.quote}
-                isCancelling={cancellingId === r.reservationId}
-                onConfirm={confirmCancel}
-                onClose={() => setRefundPreview(null)}
-              />
-            )}
-            {canPay(r) && tossPayingId === r.reservationId && (
-              <TossPaymentWidget
-                reservationId={r.reservationId}
-                amount={r.totalPrice}
-                orderName={`${r.performanceTitle}`.slice(0, 100)}
-                onClose={() => setTossPayingId(null)}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
+      {activeReservations.length > 0 && <ul>{activeReservations.map(renderReservation)}</ul>}
+
+      {cancelledReservations.length > 0 && (
+        <button
+          type="button"
+          className="cancelled-toggle"
+          aria-expanded={showCancelled}
+          onClick={() => setShowCancelled((prev) => !prev)}
+        >
+          {showCancelled ? '취소 내역 접기' : `취소 내역 보기 (${cancelledReservations.length}건)`}
+        </button>
+      )}
+      {showCancelled && <ul>{cancelledReservations.map(renderReservation)}</ul>}
     </div>
   );
 }
